@@ -2,6 +2,8 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/trackingWheel.hpp"
 #include <iostream>
+#include "json.hpp"
+#include "logging.hpp"
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 pros::MotorGroup
@@ -47,9 +49,9 @@ lemlib::ControllerSettings
 
 // angular PID controller
 lemlib::ControllerSettings
-    angular_controller(2,   // proportional gain (kP)
+    angular_controller(3,   // proportional gain (kP)
                        0,   // integral gain (kI)
-                       10,  // derivative gain (kD)
+                       17,  // derivative gain (kD)
                        3,   // anti windup
                        1,   // small error range, in degrees
                        100, // small error range timeout, in milliseconds
@@ -150,15 +152,16 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-  while (true) {
-    // get left y and right x positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+  chassis.setPose(0, 0, 0);
+  // turn to face heading 90 with a very long timeout
+  chassis.moveToPoint(0, 48, 10000);
+  int x = 0;
+    while (true) {
+        ExampleStruct payload{x};
+        Message msg{"my_topic_name", payload};
+        std::cout << static_cast<json>(msg) << std::flush;
 
-    // move the robot
-    chassis.arcade(leftY, rightX);
-
-    // delay to save resources
-    pros::delay(25);
-  }
+        pros::delay(20); 
+        x++;
+    }
 }
