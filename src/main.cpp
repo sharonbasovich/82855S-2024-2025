@@ -2,6 +2,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/trackingWheel.hpp"
 #include <iostream>
+#include <sys/_intsup.h>
 #include "json.hpp"
 #include "logging.hpp"
 
@@ -153,15 +154,17 @@ void autonomous() {}
  */
 void opcontrol() {
   chassis.setPose(0, 0, 0);
-  // turn to face heading 90 with a very long timeout
-  chassis.moveToPoint(0, 48, 10000);
-  int x = 0;
     while (true) {
-        ExampleStruct payload{x};
-        Message msg{"my_topic_name", payload};
+		lemlib::Pose pose = chassis.getPose(true);
+
+		
+
+        Odometry payload{std::round(pose.x / 100) * 100,
+						std::round(pose.y / 100) * 100,
+						std::round(pose.theta / 100) * 100};
+        Message msg{"odometry", payload};
         std::cout << static_cast<json>(msg) << std::flush;
 
         pros::delay(20); 
-        x++;
     }
 }

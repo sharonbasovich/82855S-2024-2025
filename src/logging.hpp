@@ -19,3 +19,13 @@ struct ExampleStruct {
 inline void to_json(json& j, const ExampleStruct& msg) {
     j = json{{"x", msg.x}};
 }
+
+struct Odometry {
+  double x;
+  double y;
+  double theta;
+};
+
+inline void to_json(json& j, const Odometry& msg) {
+    j = json{{"x", msg.x}, {"y", msg.y}, {"theta", msg.theta}};
+}
