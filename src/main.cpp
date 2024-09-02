@@ -7,42 +7,44 @@
 #include <sys/_intsup.h>
 
 pros::MotorGroup
-    left_motors({9, 10, 20},
-                pros::MotorGearset::blue); // left motors on ports 9, 10, 20 with 600 rpm cart
+    left_motors({-1, -2, -5},
+                pros::MotorGearset::blue); // left motors on ports 1, 2, 5 with 600 rpm cart
 pros::MotorGroup
-    right_motors({-8, -18, -19},
-                 pros::MotorGearset::blue); // right motors on ports 8, 18, 19 with 600 rpm cart
+    right_motors({3, 4, 6},
+                 pros::MotorGearset::blue); // right motors on ports 3, 4, 6 with 600 rpm cart
 
 // create an imu on port 17
-pros::Imu imu(17);
+//pros::Imu imu(17);
 
 // create an optical shaft encoder connected to ports 'A' and 'B'
-pros::adi::Encoder adi_encoder('A', 'B');
+//pros::adi::Encoder adi_encoder('A', 'B');
 
 // create a v5 rotation sensor on port 7
-pros::Rotation rotation_sensor(7);
+//pros::Rotation rotation_sensor(7);
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors,               // left motor group
                               &right_motors,              // right motor group
-                              11.5,                         // 11.5 inch track width
-                              lemlib::Omniwheel::NEW_275, // using new 2.75" omnis
-                              600, // drivetrain rpm is 600
+                              12,                         // 12 inch track width
+                              lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
+                              450, // drivetrain rpm is 450
                               2    // horizontal drift is 2 (for now)
 );
 
-lemlib::TrackingWheel horizontal_tracking_wheel(&adi_encoder, lemlib::Omniwheel::NEW_275, -6.5);
+//lemlib::TrackingWheel horizontal_tracking_wheel(&adi_encoder, lemlib::Omniwheel::NEW_275, -6.5);
 
-lemlib::TrackingWheel vertical_tracking_wheel(&rotation_sensor, lemlib::Omniwheel::NEW_275, 0);
+//lemlib::TrackingWheel vertical_tracking_wheel(&rotation_sensor, lemlib::Omniwheel::NEW_275, 0);
 
-lemlib::OdomSensors sensors(
+/*lemlib::OdomSensors sensors(
     &vertical_tracking_wheel, // vertical tracking wheel 1, set to null
     nullptr, // vertical tracking wheel 2, set to nullptr as we have none
     &horizontal_tracking_wheel, // horizontal tracking wheel 1
     nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a
              // second one
     &imu     // inertial sensor
-);
+);*/
+
+lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, nullptr);
 
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
@@ -100,7 +102,7 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-  pros::lcd::initialize(); // initialize brain screen
+  /*pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
     pros::Task screen_task([&]() {
@@ -112,7 +114,7 @@ void initialize() {
             // delay to save resources
             pros::delay(20);
         }
-    });
+    });*/
 }
 
 /**
