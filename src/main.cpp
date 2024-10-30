@@ -4,7 +4,16 @@
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "logging.hpp"
 #include <iostream>
+#include <bits/stdc++.h>
 #include <sys/_intsup.h>
+
+
+
+pros::Optical Optic(1); 
+bool teamColour = 0; //0 if blue, 1 if red
+pros::Distance Dist1(2);
+pros::Distance Dist2(3);
+//not official numbers
 
 pros::MotorGroup
     left_motors({-1, -2, -5},
@@ -147,7 +156,12 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+
+
+
+
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -174,7 +188,36 @@ void opcontrol() {
         // move the robot
         chassis.arcade(leftY, rightX);
 
+        
+
+
+
+
         // delay to save resources
         pros::delay(25);
     }
+
+    
+}
+
+bool activateRacism() {;
+        //optical sensor
+    double hue = Optic.get_hue(); 
+    bool redOrBlu = 0; //0 for red, 1 for blue
+        
+    if( std::min(hue, 360-hue)       >    abs(hue-180)){
+        //distance from 0 or 360     //distance from 180
+        redOrBlu = 1;
+        //if the distance from red areas is larger than distance from blue areas, it must be blue, default is red
+    }
+          
+    double saturation = Optic.get_saturation(); //these probably arent necessary
+    double brightness = Optic.get_brightness(); //these probably arent necessary
+
+        //distance sensor
+    int ringIntakeDist = Dist1.get();
+    int ringPresenceConfidence = Dist1.get_confidence();
+
+    return (ringIntakeDist<=30&&ringPresenceConfidence>=32)&&(teamColour!=redOrBlu);
+    //returns true if the ring 
 }
