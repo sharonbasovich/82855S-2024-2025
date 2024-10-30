@@ -6,7 +6,6 @@
 #include <iostream>
 #include <sys/_intsup.h>
 #include "config.h"
-//sdads
 // create an imu on port 17
 //pros::Imu imu(17);
 
