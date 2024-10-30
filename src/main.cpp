@@ -7,10 +7,14 @@
 #include <sys/_intsup.h>
 // create an imu on port 17
 //pros::Imu imu(17);
-//commentihdhsj
-//hi kerry
-//test
-//Sex
+
+//assign ports
+pros::Optical Optic(0);
+pros::Distance Dist1(0);
+pros::Distance Dist2(0);
+bool teamColour = 0;//0 for red, 1 for blue
+
+
 // create an optical shaft encoder connected to ports 'A' and 'B'
 //pros::adi::Encoder adi_encoder('A', 'B');
 
@@ -171,4 +175,26 @@ void opcontrol() {
         // delay to save resources
         pros::delay(25);
     }
+}
+
+bool activateRacism() {
+        //optical sensor
+    double hue = Optic.get_hue(); 
+    bool redOrBlu = 0; //0 for red, 1 for blue
+        
+    if( std::min(hue, 360-hue)       >    abs(hue-180)){
+        //distance from 0 or 360     //distance from 180
+        redOrBlu = 1;
+        //if the distance from red areas is larger than distance from blue areas, it must be blue, default is red
+    }
+          
+    double saturation = Optic.get_saturation(); //these probably arent necessary
+    double brightness = Optic.get_brightness(); //these probably arent necessary
+
+        //distance sensor
+    int ringIntakeDist = Dist1.get();
+    int ringPresenceConfidence = Dist1.get_confidence();
+
+    return (ringIntakeDist<=30&&ringPresenceConfidence>=32)&&(teamColour!=redOrBlu);
+    //returns true if the ring is the wrong colour
 }
