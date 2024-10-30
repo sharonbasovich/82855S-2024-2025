@@ -5,6 +5,7 @@
 #include "logging.hpp"
 #include <iostream>
 #include <sys/_intsup.h>
+#include "config.h"
 // create an imu on port 17
 //pros::Imu imu(17);
 
