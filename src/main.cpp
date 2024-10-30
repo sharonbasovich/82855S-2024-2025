@@ -4,30 +4,16 @@
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "logging.hpp"
 #include <iostream>
-#include <bits/stdc++.h>
 #include <sys/_intsup.h>
-
-
-//these need motor assignments
-pros::Optical Optic(1); 
-bool teamColour = 0; //0 if blue, 1 if red
-pros::Distance Dist1(2);
-pros::Distance Dist2(3);
-//not official numbers
-
-pros::MotorGroup
-    left_motors({-1, -2, -5},
-                pros::MotorGearset::blue); // left motors on ports 1, 2, 5 with 600 rpm cart
-pros::MotorGroup
-    right_motors({3, 4, 6},
-                 pros::MotorGearset::blue); // right motors on ports 3, 4, 6 with 600 rpm cart
-
-//needs motor assignments
-pros::MotorGroup
-    intake({1}, pros::Motorgearset::blue);
-
 // create an imu on port 17
 //pros::Imu imu(17);
+
+//assign ports
+pros::Optical Optic(0);
+pros::Distance Dist1(0);
+pros::Distance Dist2(0);
+bool teamColour = 0;//0 for red, 1 for blue
+
 
 // create an optical shaft encoder connected to ports 'A' and 'B'
 //pros::adi::Encoder adi_encoder('A', 'B');
@@ -36,8 +22,8 @@ pros::MotorGroup
 //pros::Rotation rotation_sensor(7);
 
 // drivetrain settings
-lemlib::Drivetrain drivetrain(&left_motors,               // left motor group
-                              &right_motors,              // right motor group
+lemlib::Drivetrain drivetrain(&left_mg,               // left motor group
+                              &right_mg,              // right motor group
                               12,                         // 12 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
                               450, // drivetrain rpm is 450
@@ -159,12 +145,7 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {
-
-
-
-
-}
+void autonomous() {}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -191,19 +172,9 @@ void opcontrol() {
         // move the robot
         chassis.arcade(leftY, rightX);
 
-        bool intake = controller.get_analog(/*whatever button we're using for intake*/);
-        if(intake){
-            //
-        }
-
-
-
-
         // delay to save resources
         pros::delay(25);
     }
-
-    
 }
 
 bool activateRacism() {
