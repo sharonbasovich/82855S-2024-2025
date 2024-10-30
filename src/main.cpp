@@ -16,6 +16,7 @@ pros::MotorGroup
 // create an imu on port 17
 //pros::Imu imu(17);
 //comment
+//hi kerry
 // create an optical shaft encoder connected to ports 'A' and 'B'
 //pros::adi::Encoder adi_encoder('A', 'B');
 
