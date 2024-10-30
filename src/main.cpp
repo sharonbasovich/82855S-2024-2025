@@ -8,7 +8,7 @@
 #include <sys/_intsup.h>
 
 
-
+//these need motor assignments
 pros::Optical Optic(1); 
 bool teamColour = 0; //0 if blue, 1 if red
 pros::Distance Dist1(2);
@@ -22,10 +22,13 @@ pros::MotorGroup
     right_motors({3, 4, 6},
                  pros::MotorGearset::blue); // right motors on ports 3, 4, 6 with 600 rpm cart
 
+//needs motor assignments
+pros::MotorGroup
+    intake({1}, pros::Motorgearset::blue);
+
 // create an imu on port 17
 //pros::Imu imu(17);
-//comment
-//hi kerry
+
 // create an optical shaft encoder connected to ports 'A' and 'B'
 //pros::adi::Encoder adi_encoder('A', 'B');
 
@@ -188,7 +191,10 @@ void opcontrol() {
         // move the robot
         chassis.arcade(leftY, rightX);
 
-        
+        bool intake = controller.get_analog(/*whatever button we're using for intake*/);
+        if(intake){
+            //
+        }
 
 
 
@@ -200,7 +206,7 @@ void opcontrol() {
     
 }
 
-bool activateRacism() {;
+bool activateRacism() {
         //optical sensor
     double hue = Optic.get_hue(); 
     bool redOrBlu = 0; //0 for red, 1 for blue
@@ -219,5 +225,5 @@ bool activateRacism() {;
     int ringPresenceConfidence = Dist1.get_confidence();
 
     return (ringIntakeDist<=30&&ringPresenceConfidence>=32)&&(teamColour!=redOrBlu);
-    //returns true if the ring 
+    //returns true if the ring is the wrong colour
 }
