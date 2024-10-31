@@ -5,6 +5,8 @@
 #include "logging.hpp"
 #include <iostream>
 #include <sys/_intsup.h>
+#include "config.h"
+
 // create an imu on port 17
 //pros::Imu imu(17);
 
@@ -13,6 +15,12 @@ pros::Optical Optic(0);
 pros::Distance Dist1(0);
 pros::Distance Dist2(0);
 bool teamColour = 0;//0 for red, 1 for blue
+pros::Motor intakeMotor(0);
+pros::Motor wallStakeArm(0);
+pros::adi::Pneumatics clampPistonL('a', false);
+pros::adi::Pneumatics clampPistonR('a', false);
+pros::adi::Pneumatics Eject('a', false); //are we even implementing this
+
 
 
 // create an optical shaft encoder connected to ports 'A' and 'B'
@@ -160,24 +168,66 @@ void autonomous() {}
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 void opcontrol() {
     // loop forever
     while (true) {
         // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
         chassis.arcade(leftY, rightX);
+
+        //buttons
+        bool intake = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);//activate intake
+        bool outake = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);//activate intake
+        
+        int distToGoal = Dist2.get();
+        //int confidenceToGoal = Dist2.get_confidence();
+
+        bool mechDetach = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        bool mechClose = (distToGoal <= 10/* && confidenceToGoal > 50 */&& !mechDetach); //actiate mech if it detects a goal
+
+        bool wallStakeFor = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        bool wallStakeBack = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        //bool hanglock = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+
+        if(mechClose){
+            clampPistonL.extend();
+            clampPistonR.extend();
+        }
+        else{
+            clampPistonL.retract();
+            clampPistonR.retract();
+        }
+
+        if(wallStakeFor||wallStakeBack){
+            int wallStakePower = wallStakeFor - wallStakeBack; //this should return 1 for forwards, -1 for backwards
+            wallStakeArm.move(127*wallStakePower);
+
+        }
+
+        if(intake||outake){
+            int intakePower = intake - outake;  //this should return 1 for forwards, -1 for backwards
+            intakeMotor.move(127 * intakePower);
+            
+            /*uncomment if were using this
+            if(ejectRing()){
+                Eject.extend();
+                pros::delay(10);
+                Eject.retract();
+            }
+            */
+        }
+
 
         // delay to save resources
         pros::delay(25);
     }
 }
 
-bool activateRacism() {
+bool ejectRing() {
         //optical sensor
     double hue = Optic.get_hue(); 
     bool redOrBlu = 0; //0 for red, 1 for blue
@@ -193,8 +243,8 @@ bool activateRacism() {
 
         //distance sensor
     int ringIntakeDist = Dist1.get();
-    int ringPresenceConfidence = Dist1.get_confidence();
+    //int ringPresenceConfidence = Dist1.get_confidence();
 
-    return (ringIntakeDist<=30&&ringPresenceConfidence>=32)&&(teamColour!=redOrBlu);
+    return (ringIntakeDist<=20/*&&ringPresenceConfidence>=32)*/&&(teamColour!=redOrBlu));
     //returns true if the ring is the wrong colour
 }
