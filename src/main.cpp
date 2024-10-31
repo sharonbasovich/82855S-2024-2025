@@ -226,11 +226,13 @@ void opcontrol()
             clampPistonR.retract();
         }
         */
+       
+       /*
         if (wallStakeIdle || wallStakeGrab || wallStakeSwing)
         {
             int position = wallStakeGrab*(1) + wallStakeIdle*(1) + wallStakeSwing*(1);
             wall_stake_arm.move_absolute(position, 100);
-        }
+        }*/
         
         if (intake || outake)
         {
