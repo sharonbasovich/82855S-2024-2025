@@ -15,12 +15,11 @@ pros::Optical Optic(0);
 pros::Distance Dist1(0);
 pros::Distance Dist2(0);
 bool teamColour = 0;//0 for red, 1 for blue
-pros::Motor intakeMotor(0);
 pros::Motor wallStakeArm(0);
 pros::adi::Pneumatics clampPistonL('a', false);
 pros::adi::Pneumatics clampPistonR('a', false);
 pros::adi::Pneumatics Eject('a', false); //are we even implementing this
-bool outake, intake;
+bool outake = 0; bool intake = 0;
 
 
 
@@ -216,7 +215,7 @@ void opcontrol() {
 
         if(intake||outake){
             int intakePower = intake - outake;  //this should return 1 for forwards, -1 for backwards
-            intakeMotor.move(127 * intakePower);
+            intake_motor.move(127 * intakePower);
             
             /*uncomment if were using this
             if(ejectRing()){
