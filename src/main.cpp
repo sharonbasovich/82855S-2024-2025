@@ -20,6 +20,7 @@ pros::Motor wallStakeArm(0);
 pros::adi::Pneumatics clampPistonL('a', false);
 pros::adi::Pneumatics clampPistonR('a', false);
 pros::adi::Pneumatics Eject('a', false); //are we even implementing this
+bool outake, intake;
 
 
 
@@ -173,6 +174,7 @@ void opcontrol() {
     // loop forever
     while (true) {
         // get left y and right x positions
+        
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
@@ -180,8 +182,12 @@ void opcontrol() {
         chassis.arcade(leftY, rightX);
 
         //buttons
-        bool intake = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);//activate intake
-        bool outake = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);//activate intake
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            intake = (intake^1); outake = 0;
+        }
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            outake = (outake^1); intake = 0;
+        }
         
         int distToGoal = Dist2.get();
         //int confidenceToGoal = Dist2.get_confidence();
