@@ -13,6 +13,10 @@ pros::Optical Optic(0);
 pros::Distance Dist1(0);
 pros::Distance Dist2(0);
 bool teamColour = 0; // 0 for red, 1 for blue
+bool intake = 0;
+bool outake = 0;
+int intakeCooldown = 0;
+int outakeCooldown = 0;
 
 // create an optical shaft encoder connected to ports 'A' and 'B'
 // pros::adi::Encoder adi_encoder('A', 'B');
@@ -101,19 +105,9 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
  */
 void initialize()
 {
-    /*pros::lcd::initialize(); // initialize brain screen
-      chassis.calibrate(); // calibrate sensors
-      // print position to brain screen
-      pros::Task screen_task([&]() {
-          while (true) {
-              // print robot location to the brain screen
-              pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
-              pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
-              pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-              // delay to save resources
-              pros::delay(20);
-          }
-      });*/
+    pros::lcd::initialize(); // initialize brain screen
+                             // chassis.calibrate(); // calibrate sensors
+                             // print position to brain screen
 }
 
 /**
@@ -167,6 +161,7 @@ void opcontrol()
     // loop forever
     while (true)
     {
+
         // get left y and right x positions
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
@@ -175,8 +170,29 @@ void opcontrol()
         chassis.arcade(leftY, rightX);
 
         // buttons
-        bool intake = master.get_digital(pros::E_CONTROLLER_DIGITAL_A); // activate intake
-        bool outake = master.get_digital(pros::E_CONTROLLER_DIGITAL_B); // activate intake
+
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && intakeCooldown ==0)
+        {
+            intake = !intake;
+            outake = 0;
+            intakeCooldown = 40;
+        } // activate intake
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B) &&outakeCooldown ==0)
+        {
+            outake = !outake;
+            intake = 0;
+            outakeCooldown = 40;
+        } // activate outake
+        pros::Task screen_task([&]() {
+            // print robot location to the brain screen
+            //   pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
+            //   pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
+            //   pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+            // delay to save resources
+            pros::lcd::print(0, "intake: %d", intake);
+            pros::lcd::print(1, "outake: %d", outake);
+            pros::lcd::print(2, "button a: %d", master.get_digital(pros::E_CONTROLLER_DIGITAL_A));
+        });
 
         /*
         int distToGoal = Dist2.get();
@@ -222,6 +238,8 @@ void opcontrol()
         
 
             // delay to save resources
+            intakeCooldown = std::max(intakeCooldown-1, 0);
+            outakeCooldown = std::max(outakeCooldown-1, 0);
             pros::delay(25);
     }
 }
