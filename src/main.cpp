@@ -17,6 +17,9 @@ bool intake = 0;
 bool outake = 0;
 int intakeCooldown = 0;
 int outakeCooldown = 0;
+bool wallStakeIdle = 0;
+bool wallStakeGrab = 0;
+bool wallStakeSwing = 0;
 
 // create an optical shaft encoder connected to ports 'A' and 'B'
 // pros::adi::Encoder adi_encoder('A', 'B');
@@ -189,9 +192,7 @@ void opcontrol()
             //   pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
             //   pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
             // delay to save resources
-            pros::lcd::print(0, "intake: %d", intake);
-            pros::lcd::print(1, "outake: %d", outake);
-            pros::lcd::print(2, "button a: %d", master.get_digital(pros::E_CONTROLLER_DIGITAL_A));
+            pros::lcd::print(2, "current position: %f", wall_stake_arm.get_position());
         });
 
         /*
@@ -200,11 +201,20 @@ void opcontrol()
 
         bool mechDetach = master.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
         bool mechClose = (distToGoal <= 10 /* && confidenceToGoal > 50  && !mechDetach); // actiate mech if it detects a goal
-
-        bool wallStakeFor = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-        bool wallStakeBack = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+        */
+        
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            wallStakeIdle = 1; wallStakeGrab=0; wallStakeSwing = 0;
+        }
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            wallStakeIdle = 0; wallStakeGrab=1; wallStakeSwing = 0;
+        }
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            wallStakeIdle = 0; wallStakeGrab=0; wallStakeSwing = 1;
+        }
+        
         // bool hanglock = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-
+/*
         if (mechClose)
         {
             clampPistonL.extend();
@@ -215,13 +225,13 @@ void opcontrol()
             clampPistonL.retract();
             clampPistonR.retract();
         }
-        
-        if (wallStakeFor || wallStakeBack)
-        {
-            int wallStakePower = wallStakeFor - wallStakeBack; // this should return 1 for forwards, -1 for backwards
-            wallStakeArm.move(127 * wallStakePower);
-        }
         */
+        if (wallStakeIdle || wallStakeGrab || wallStakeSwing)
+        {
+            int position = wallStakeGrab*(1) + wallStakeIdle*(1) + wallStakeSwing*(1);
+            wall_stake_arm.move_absolute(position, 100);
+        }
+        
         if (intake || outake)
         {
             int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
