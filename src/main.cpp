@@ -15,7 +15,7 @@ pros::Distance Dist1(0);
 pros::Distance Dist2(0);
 bool teamColour = 0;//0 for red, 1 for blue
 
-
+//sigma
 // create an optical shaft encoder connected to ports 'A' and 'B'
 //pros::adi::Encoder adi_encoder('A', 'B');
 
