@@ -29,4 +29,4 @@ inline pros::MotorGroup left_mg({LEFT_FRONT_MOTOR_PORT,LEFT_MIDDLE_MOTOR_PORT,LE
 inline pros::MotorGroup right_mg({RIGHT_FRONT_MOTOR_PORT,RIGHT_MIDDLE_MOTOR_PORT, RIGHT_BACK_MOTOR_PORT},pros::MotorGearset::blue);
 
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
-inline pros::Motor intake_motor(INTAKE_MOTOR);
+inline pros::Motor intake_motor(INTAKE_MOTOR)
