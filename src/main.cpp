@@ -2,38 +2,48 @@
 #include "json.hpp"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/trackingWheel.hpp"
-#include "logging.hpp"
 #include <iostream>
 #include <sys/_intsup.h>
 #include "config.h"
 // create an imu on port 17
-//pros::Imu imu(17);
+// pros::Imu imu(17);
 
-//assign ports
+// assign ports
 pros::Optical Optic(0);
 pros::Distance Dist1(0);
 pros::Distance Dist2(0);
+//sigma 
+
 bool teamColour = 0;//0 for red, 1 for blue
 
-//sigma
+
+bool teamColour = 0; // 0 for red, 1 for blue
+bool intake = 0;
+bool outake = 0;
+int intakeCooldown = 0;
+int outakeCooldown = 0;
+bool wallStakeIdle = 0;
+bool wallStakeGrab = 0;
+bool wallStakeSwing = 0;
+
 // create an optical shaft encoder connected to ports 'A' and 'B'
-//pros::adi::Encoder adi_encoder('A', 'B');
+// pros::adi::Encoder adi_encoder('A', 'B');
 
 // create a v5 rotation sensor on port 7
-//pros::Rotation rotation_sensor(7);
+// pros::Rotation rotation_sensor(7);
 
 // drivetrain settings
-lemlib::Drivetrain drivetrain(&left_mg,               // left motor group
-                              &right_mg,              // right motor group
+lemlib::Drivetrain drivetrain(&left_mg,                   // left motor group
+                              &right_mg,                  // right motor group
                               12,                         // 12 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
-                              450, // drivetrain rpm is 450
-                              2    // horizontal drift is 2 (for now)
+                              450,                        // drivetrain rpm is 450
+                              2                           // horizontal drift is 2 (for now)
 );
 
-//lemlib::TrackingWheel horizontal_tracking_wheel(&adi_encoder, lemlib::Omniwheel::NEW_275, -6.5);
+// lemlib::TrackingWheel horizontal_tracking_wheel(&adi_encoder, lemlib::Omniwheel::NEW_275, -6.5);
 
-//lemlib::TrackingWheel vertical_tracking_wheel(&rotation_sensor, lemlib::Omniwheel::NEW_275, 0);
+// lemlib::TrackingWheel vertical_tracking_wheel(&rotation_sensor, lemlib::Omniwheel::NEW_275, 0);
 
 /*lemlib::OdomSensors sensors(
     &vertical_tracking_wheel, // vertical tracking wheel 1, set to null
@@ -47,34 +57,34 @@ lemlib::Drivetrain drivetrain(&left_mg,               // left motor group
 lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, nullptr);
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
-                                              0, // integral gain (kI)
-                                              3, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in inches
+lemlib::ControllerSettings lateral_controller(10,  // proportional gain (kP)
+                                              0,   // integral gain (kI)
+                                              3,   // derivative gain (kD)
+                                              3,   // anti windup
+                                              1,   // small error range, in inches
                                               100, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
+                                              3,   // large error range, in inches
                                               500, // large error range timeout, in milliseconds
-                                              20 // maximum acceleration (slew)
+                                              20   // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
-                                              0, // integral gain (kI)
-                                              10, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in degrees
+lemlib::ControllerSettings angular_controller(2,   // proportional gain (kP)
+                                              0,   // integral gain (kI)
+                                              10,  // derivative gain (kD)
+                                              3,   // anti windup
+                                              1,   // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
-                                              3, // large error range, in degrees
+                                              3,   // large error range, in degrees
                                               500, // large error range timeout, in milliseconds
-                                              0 // maximum acceleration (slew)
+                                              0    // maximum acceleration (slew)
 );
 
 // create the chassis
-lemlib::Chassis chassis(drivetrain, // drivetrain settings
+lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         lateral_controller, // lateral PID settings
                         angular_controller, // angular PID settings
-                        sensors // odometry sensors
+                        sensors             // odometry sensors
 );
 
 lemlib::ExpoDriveCurve
@@ -101,20 +111,11 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
-  /*pros::lcd::initialize(); // initialize brain screen
-    chassis.calibrate(); // calibrate sensors
-    // print position to brain screen
-    pros::Task screen_task([&]() {
-        while (true) {
-            // print robot location to the brain screen
-            pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
-            pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
-            pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-            // delay to save resources
-            pros::delay(20);
-        }
-    });*/
+void initialize()
+{
+    pros::lcd::initialize(); // initialize brain screen
+                             // chassis.calibrate(); // calibrate sensors
+                             // print position to brain screen
 }
 
 /**
@@ -163,39 +164,123 @@ void autonomous() {}
  */
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-void opcontrol() {
+void opcontrol()
+{
     // loop forever
-    while (true) {
+    while (true)
+    {
+
         // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
         chassis.arcade(leftY, rightX);
 
-        // delay to save resources
-        pros::delay(25);
+        // buttons
+
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && intakeCooldown ==0)
+        {
+            intake = !intake;
+            outake = 0;
+            intakeCooldown = 40;
+        } // activate intake
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B) &&outakeCooldown ==0)
+        {
+            outake = !outake;
+            intake = 0;
+            outakeCooldown = 40;
+        } // activate outake
+        pros::Task screen_task([&]() {
+            // print robot location to the brain screen
+            //   pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
+            //   pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
+            //   pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+            // delay to save resources
+            pros::lcd::print(2, "current position: %f", wall_stake_arm.get_position());
+        });
+
+        /*
+        int distToGoal = Dist2.get();
+        // int confidenceToGoal = Dist2.get_confidence();
+
+        bool mechDetach = master.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
+        bool mechClose = (distToGoal <= 10 /* && confidenceToGoal > 50  && !mechDetach); // actiate mech if it detects a goal
+        */
+        
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            wallStakeIdle = 1; wallStakeGrab=0; wallStakeSwing = 0;
+        }
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            wallStakeIdle = 0; wallStakeGrab=1; wallStakeSwing = 0;
+        }
+        if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
+            wallStakeIdle = 0; wallStakeGrab=0; wallStakeSwing = 1;
+        }
+        
+        // bool hanglock = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
+/*
+        if (mechClose)
+        {
+            clampPistonL.extend();
+            clampPistonR.extend();
+        }
+        else
+        {
+            clampPistonL.retract();
+            clampPistonR.retract();
+        }
+        */
+       
+       /*
+        if (wallStakeIdle || wallStakeGrab || wallStakeSwing)
+        {
+            int position = wallStakeGrab*(1) + wallStakeIdle*(1) + wallStakeSwing*(1);
+            wall_stake_arm.move_absolute(position, 100);
+        }*/
+        
+        if (intake || outake)
+        {
+            int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
+            intake_motor.move(127 * intakePower);
+
+            /*uncomment if were using this
+            if(ejectRing()){
+                Eject.extend();
+                pros::delay(10);
+                Eject.retract();
+            }
+            */
+        }
+        
+
+            // delay to save resources
+            intakeCooldown = std::max(intakeCooldown-1, 0);
+            outakeCooldown = std::max(outakeCooldown-1, 0);
+            pros::delay(25);
     }
 }
 
-bool activateRacism() {
-        //optical sensor
-    double hue = Optic.get_hue(); 
-    bool redOrBlu = 0; //0 for red, 1 for blue
-        
-    if( std::min(hue, 360-hue)       >    abs(hue-180)){
-        //distance from 0 or 360     //distance from 180
+bool ejectRing()
+{
+    // optical sensor
+    double hue = Optic.get_hue();
+    bool redOrBlu = 0; // 0 for red, 1 for blue
+
+    if (std::min(hue, 360 - hue) > abs(hue - 180))
+    {
+        // distance from 0 or 360     //distance from 180
         redOrBlu = 1;
-        //if the distance from red areas is larger than distance from blue areas, it must be blue, default is red
+        // if the distance from red areas is larger than distance from blue areas, it must be blue, default is red
     }
-          
-    double saturation = Optic.get_saturation(); //these probably arent necessary
-    double brightness = Optic.get_brightness(); //these probably arent necessary
 
-        //distance sensor
+    double saturation = Optic.get_saturation(); // these probably arent necessary
+    double brightness = Optic.get_brightness(); // these probably arent necessary
+
+    // distance sensor
     int ringIntakeDist = Dist1.get();
-    int ringPresenceConfidence = Dist1.get_confidence();
+    // int ringPresenceConfidence = Dist1.get_confidence();
 
-    return (ringIntakeDist<=30&&ringPresenceConfidence>=32)&&(teamColour!=redOrBlu);
-    //returns true if the ring is the wrong colour
+    return (ringIntakeDist <= 20 /*&&ringPresenceConfidence>=32)*/ && (teamColour != redOrBlu));
+    // returns true if the ring is the wrong colour
 }
