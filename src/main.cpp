@@ -12,14 +12,21 @@
 pros::Optical Optic(0);
 pros::Distance Dist1(0);
 pros::Distance Dist2(0);
+//sigma 
+
+bool teamColour = 0;//0 for red, 1 for blue
+
+
 bool teamColour = 0; // 0 for red, 1 for blue
 bool intake = 0;
 bool outake = 0;
 int intakeCooldown = 0;
 int outakeCooldown = 0;
+int doinkerCooldown = 0;
 bool wallStakeIdle = 0;
 bool wallStakeGrab = 0;
 bool wallStakeSwing = 0;
+bool doinkPosition = 0;
 
 // create an optical shaft encoder connected to ports 'A' and 'B'
 // pros::adi::Encoder adi_encoder('A', 'B');
@@ -195,13 +202,13 @@ void opcontrol()
             pros::lcd::print(2, "current position: %f", wall_stake_arm.get_position());
         });
 
-        /*
+        
         int distToGoal = Dist2.get();
         // int confidenceToGoal = Dist2.get_confidence();
 
-        bool mechDetach = master.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
-        bool mechClose = (distToGoal <= 10 /* && confidenceToGoal > 50  && !mechDetach); // actiate mech if it detects a goal
-        */
+        bool mechDetach = master.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
+        bool mechClose = (distToGoal <= 10 && !mechDetach); // actiate mech if it detects a goal
+
         
         if(master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)){
             wallStakeIdle = 1; wallStakeGrab=0; wallStakeSwing = 0;
@@ -214,19 +221,30 @@ void opcontrol()
         }
         
         // bool hanglock = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-/*
+
         if (mechClose)
         {
-            clampPistonL.extend();
-            clampPistonR.extend();
+            MogoPiston1.extend();
+            MogoPiston2.extend();
         }
         else
         {
-            clampPistonL.retract();
-            clampPistonR.retract();
+            MogoPiston1.retract();
+            MogoPiston2.retract();
         }
-        */
-       
+        
+       if(master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)&&doinkerCooldown==0){
+        doinkPosition = !doinkPosition;
+        doinkerCooldown=40;
+        if(doinkPosition) doinkerArm.extend();
+        else doinkerArm.retract();
+        
+
+        
+       }
+        
+
+
        /*
         if (wallStakeIdle || wallStakeGrab || wallStakeSwing)
         {
@@ -237,7 +255,7 @@ void opcontrol()
         if (intake || outake)
         {
             int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
-            intake_motor.move(127 * intakePower);
+            intake_motor.move(-127 * intakePower);
 
             /*uncomment if were using this
             if(ejectRing()){
@@ -252,6 +270,7 @@ void opcontrol()
             // delay to save resources
             intakeCooldown = std::max(intakeCooldown-1, 0);
             outakeCooldown = std::max(outakeCooldown-1, 0);
+            doinkerCooldown = std::max(doinkerCooldown-1, 0);
             pros::delay(25);
     }
 }

@@ -12,6 +12,9 @@
 #define RIGHT_MIDDLE_MOTOR_PORT 19
 #define RIGHT_BACK_MOTOR_PORT 20
 #define INTAKE_MOTOR 10
+#define MogoPistonPort1 'A'
+#define MogoPistonPort2 'B'
+#define doinker 'C'
 
 #define DRIVE_GEARSET pros::E_MOTOR_GEARSET_06
 #define WHEEL_DIAMETER 3.25
@@ -29,4 +32,10 @@ inline pros::MotorGroup left_mg({LEFT_FRONT_MOTOR_PORT,LEFT_MIDDLE_MOTOR_PORT,LE
 inline pros::MotorGroup right_mg({RIGHT_FRONT_MOTOR_PORT,RIGHT_MIDDLE_MOTOR_PORT, RIGHT_BACK_MOTOR_PORT},pros::MotorGearset::blue);
 
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
+
+inline pros::Motor intake_motor(INTAKE_MOTOR);
+inline pros::adi::Pneumatics MogoPiston1(MogoPistonPort1);
+inline pros::adi::Pneumatics MogoPiston2(MogoPistonPort2);
+inline pros::adi::Pneumatics doinkerArm(doinker);
 inline pros::Motor intake_motor(INTAKE_MOTOR)
+
