@@ -6,7 +6,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 #define LEFT_FRONT_MOTOR_PORT -1
-#define LEFT_MIDDLE_MOTOR_PORT -12
+#define LEFT_MIDDLE_MOTOR_PORT -13
 #define LEFT_BACK_MOTOR_PORT -6
 #define RIGHT_FRONT_MOTOR_PORT 18
 #define RIGHT_MIDDLE_MOTOR_PORT 19

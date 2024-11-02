@@ -153,14 +153,18 @@ void autonomous()
     // doinker_piston.extend();
     // pros::delay(100);
     // intake_motor.move(127);
+    pros::delay(100);
     chassis.moveToPoint(0, -30, 4000, {.forwards = false, .maxSpeed=60});
-    pros::delay(3000);
+    pros::delay(2000);
     doinker_piston.extend();
-    pros::delay(3000);
-    while (true) {
-        intake_motor.move(-127);
-    }
-    pros::delay(3000);
+    pros::delay(300);
+    intake_motor.move(-127);
+    pros::delay(1000);
+    intake_motor.move(0);
+    pros::delay(300);
+    chassis.turnToHeading(290, 4000);
+    pros::delay(300);
+    // chassis.moveToPoint(20, 20, 4000, {.maxSpeed=60});
 }
 
 /**
