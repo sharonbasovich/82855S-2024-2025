@@ -135,7 +135,7 @@ void competition_initialize() {}
  */
 void autonomous()
 {
-    int delta = 1000;
+    // int delta = 1000;
     // chassis.moveToPoint(0, 43, 4000);
     // pros::delay(delta);
     // chassis.turnToHeading(30, 4000);
