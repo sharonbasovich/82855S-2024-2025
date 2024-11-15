@@ -7,7 +7,7 @@
 
 #define LEFT_FRONT_MOTOR_PORT -1
 #define LEFT_MIDDLE_MOTOR_PORT -13
-#define LEFT_BACK_MOTOR_PORT -6
+#define LEFT_BACK_MOTOR_PORT -5
 #define RIGHT_FRONT_MOTOR_PORT 18
 #define RIGHT_MIDDLE_MOTOR_PORT 19
 #define RIGHT_BACK_MOTOR_PORT 20
@@ -15,13 +15,13 @@
 #define WHEEL_DIAMETER 3.25
 #define DRIVE_RPM 450
 
-#define INTAKE_MOTOR 10
+#define INTAKE_MOTOR -10
 
 #define DOINKER_PORT 'A'
 #define CLAMP_PORT 'B'
 
 #define WALL_STAKE_ROTATION_PORT 8
-#define WALL_STAKE_MOTOR -11
+#define INTAKE_HALF_MOTOR -11
 #define LOAD_ANGLE 20
 #define SCORE_ANGLE 140
 
@@ -43,7 +43,7 @@ inline pros::MotorGroup right_mg({RIGHT_FRONT_MOTOR_PORT,RIGHT_MIDDLE_MOTOR_PORT
 
 
 inline pros::Rotation wall_stake_rotation(WALL_STAKE_ROTATION_PORT);
-inline pros::Motor wall_stake_motor(WALL_STAKE_MOTOR);
+inline pros::Motor intake_half_motor(INTAKE_HALF_MOTOR);
 
 inline pros::Motor intake_motor(INTAKE_MOTOR);
 

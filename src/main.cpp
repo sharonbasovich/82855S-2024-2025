@@ -98,7 +98,7 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
  */
 void initialize()
 {
-     pros::lcd::initialize(); // initialize brain screen
+    pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
     // wall_stake_rotation.reset_position();
@@ -200,7 +200,7 @@ void opcontrol()
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
-        chassis.arcade(leftY, rightX);
+        chassis.arcade((leftY), rightX);
 
         // buttons
 
@@ -295,7 +295,8 @@ void opcontrol()
         }
 
         int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
-        intake_motor.move(-127 * intakePower);
+        intake_motor.move(127 * intakePower);
+        intake_half_motor.move(127 * intakePower);
 
         // int distToGoal = Dist2.get();
         //  int confidenceToGoal = Dist2.get_confidence();
@@ -360,8 +361,9 @@ void opcontrol()
                                       pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
                                       pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
                                       pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-                                   //                            pros::lcd::print(2, "High: %d", high);
-                                   //                            pros::lcd::print(3, "On target: %d", onTarget);
+                                      pros::lcd::print(3, "leftY: %f", leftY);
+                                      //                            pros::lcd::print(2, "High: %d", high);
+                                      //                            pros::lcd::print(3, "On target: %d", onTarget);
                                });
 
         pros::delay(25);
