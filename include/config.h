@@ -48,6 +48,8 @@ inline pros::Motor intake_half_motor(INTAKE_HALF_MOTOR);
 
 inline pros::Motor intake_motor(INTAKE_MOTOR);
 
+inline pros::Motor wall_stake_motor(0);
+
 inline pros::Imu imu_sensor(IMU);
 
 inline pros::adi::Pneumatics clamp_piston(CLAMP_PORT, false);
