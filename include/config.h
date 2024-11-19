@@ -5,23 +5,24 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
-#define LEFT_FRONT_MOTOR_PORT -1
-#define LEFT_MIDDLE_MOTOR_PORT -13
-#define LEFT_BACK_MOTOR_PORT -5
-#define RIGHT_FRONT_MOTOR_PORT 18
-#define RIGHT_MIDDLE_MOTOR_PORT 19
-#define RIGHT_BACK_MOTOR_PORT 20
+#define LEFT_FRONT_MOTOR_PORT -3
+#define LEFT_MIDDLE_MOTOR_PORT -2
+#define LEFT_BACK_MOTOR_PORT -1
+#define RIGHT_FRONT_MOTOR_PORT 8
+#define RIGHT_MIDDLE_MOTOR_PORT 9
+#define RIGHT_BACK_MOTOR_PORT 10
 #define DRIVE_GEARSET pros::E_MOTOR_GEARSET_06
 #define WHEEL_DIAMETER 3.25
 #define DRIVE_RPM 450
 
-#define INTAKE_MOTOR -10
+#define INTAKE_MOTOR -6
+#define INTAKE_HALF_MOTOR -7
 
-#define DOINKER_PORT 'A'
-#define CLAMP_PORT 'B'
+#define DOINKER_PORT 'G'
+#define CLAMP_PORT 'H'
 
 #define WALL_STAKE_ROTATION_PORT 8
-#define INTAKE_HALF_MOTOR -11
+
 #define LOAD_ANGLE 20
 #define SCORE_ANGLE 140
 
