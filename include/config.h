@@ -21,12 +21,15 @@
 #define DOINKER_PORT 'G'
 #define CLAMP_PORT 'H'
 
-#define WALL_STAKE_ROTATION_PORT 8
+#define WALL_STAKE_ROTATION_PORT 20
 
-#define LOAD_ANGLE 20
-#define SCORE_ANGLE 140
+//#define LOAD_ANGLE 20
+//#define SCORE_ANGLE 140
 
-#define IMU 17
+#define IMU 19
+#define ODOM_VERTICAL 12
+#define ODOM_HORIZONTAL 18
+
 
 
 
