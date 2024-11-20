@@ -39,6 +39,7 @@ inline pros::Motor left_back_motor(LEFT_BACK_MOTOR_PORT);
 inline pros::Motor right_front_motor(RIGHT_FRONT_MOTOR_PORT);
 inline pros::Motor right_middle_motor(RIGHT_MIDDLE_MOTOR_PORT);
 inline pros::Motor right_back_motor(RIGHT_BACK_MOTOR_PORT);
+//inline pros::Motor wall_stake_motor(WALL_STAKE_PORT);
 inline pros::MotorGroup left_mg({LEFT_FRONT_MOTOR_PORT,LEFT_MIDDLE_MOTOR_PORT,LEFT_BACK_MOTOR_PORT},pros::MotorGearset::blue);
 inline pros::MotorGroup right_mg({RIGHT_FRONT_MOTOR_PORT,RIGHT_MIDDLE_MOTOR_PORT, RIGHT_BACK_MOTOR_PORT},pros::MotorGearset::blue);
 
@@ -48,7 +49,7 @@ inline pros::Motor intake_half_motor(INTAKE_HALF_MOTOR);
 
 inline pros::Motor intake_motor(INTAKE_MOTOR);
 
-inline pros::Motor wall_stake_motor(0);
+inline pros::Motor wall_stake_motor(20);
 
 inline pros::Imu imu_sensor(IMU);
 

@@ -235,7 +235,9 @@ void opcontrol()
 
         }
 
-        wall_stake_motor.move_absolute(wallStakePos, 100);
+        //wall_stake_motor.move_absolute(wallStakePos, 100);
+
+
 
 
 
@@ -375,6 +377,7 @@ void opcontrol()
                                       pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
                                       pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
                                       pros::lcd::print(3, "leftY: %f", leftY);
+                                      pros::lcd::print(4, "ladybrown: %f", wall_stake_motor.get_position());
                                       //                            pros::lcd::print(2, "High: %d", high);
                                       //                            pros::lcd::print(3, "On target: %d", onTarget);
                                });
