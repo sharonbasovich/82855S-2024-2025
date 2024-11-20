@@ -3,14 +3,12 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/trackingWheel.hpp"
 #include <iostream>
-#include <sys/_intsup.h>
+//#include <sys/_intsup.h>
 #include "config.h"
 
 bool intake = 0;
 bool outake = 0;
-bool wallStakeIdle = 0;
-bool wallStakeGrab = 0;
-bool wallStakeSwing = 0;
+int wallStakePos = 0;
 bool doinkPosition = 0;
 bool clamp = 0;
 bool doinker = 0;
@@ -226,6 +224,23 @@ void opcontrol()
             doinker = !doinker;
         }
 
+//ladybrown
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
+            wallStakePos = 0;
+        }
+
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
+            if(wallStakePos==0||wallStakePos==255)wallStakePos = 128;
+            else wallStakePos = 255;
+
+        }
+
+        //wall_stake_motor.move_absolute(wallStakePos, 100);
+
+
+
+
+
         // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         // {
         //     wallStakeIdle = 1;
@@ -362,6 +377,7 @@ void opcontrol()
                                       pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
                                       pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
                                       pros::lcd::print(3, "leftY: %f", leftY);
+                                      pros::lcd::print(4, "ladybrown: %f", wall_stake_motor.get_position());
                                       //                            pros::lcd::print(2, "High: %d", high);
                                       //                            pros::lcd::print(3, "On target: %d", onTarget);
                                });
