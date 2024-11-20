@@ -8,11 +8,20 @@
 
 bool intake = 0;
 bool outake = 0;
-int wallStakePos = 0;
-bool doinkPosition = 0;
+
 bool clamp = 0;
+
+bool doinkPosition = 0;
 bool doinker = 0;
+
+//Ladybrown
+int wallState = 0;
 int wallStakeAngle = 0;
+int wallStakePos = 0;
+bool intakeSlowdown = false;
+bool resetWallStake = false;
+bool extendFull = false;
+int primedPosition = 0;
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_mg,                   // left motor group
@@ -225,16 +234,56 @@ void opcontrol()
         }
 
 //ladybrown
+        
+
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
-            wallStakePos = 0;
+            wallState++;
+            wallState%=3;
+
+            if(wallState==0){
+                resetWallStake = true;
+                extendFull=false;
+                primedPosition = 0;
+            }
+
+            if(wallState==1){
+                resetWallStake = false;
+                primedPosition = 10;
+                extendFull = false;
+            }
+
+            if(wallState==2){
+                primedPosition = 0;
+                resetWallStake = false;
+                extendFull = true;
+            }
+        }
+
+        
+        if(resetWallStake){
+            wall_stake_motor.move(-127);
+        }
+
+        if(primedPosition>0){
+            wall_stake_motor.move(127);
+            primedPosition--;
+        }
+
+        if(extendFull){
+            wall_stake_motor.move(127);
+        }
+
+        int currentPosition = (int)(wall_stake_motor.get_position()*1000);
+        if(currentPosition == wallStakePos){
+            resetWallStake=false;
+            primedPosition = 0;
+            extendFull = false;
+            wallStakePos = currentPosition;
         }
 
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
-            if(wallStakePos==0||wallStakePos==255)wallStakePos = 128;
-            else wallStakePos = 255;
-
+            intakeSlowdown = !intakeSlowdown;
         }
-
         //wall_stake_motor.move_absolute(wallStakePos, 100);
 
 
@@ -310,8 +359,9 @@ void opcontrol()
         }
 
         int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
-        intake_motor.move(127 * intakePower);
-        intake_half_motor.move(127 * intakePower);
+        intakePower = intakePower * 127 / (1+5*intakeSlowdown);
+        intake_motor.move(intakePower);
+        intake_half_motor.move(intakePower);
 
         // int distToGoal = Dist2.get();
         //  int confidenceToGoal = Dist2.get_confidence();
