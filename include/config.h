@@ -27,7 +27,7 @@
 //#define SCORE_ANGLE 140
 
 #define IMU 19
-#define ODOM_VERTICAL 12
+#define ODOM_VERTICAL -12
 #define ODOM_HORIZONTAL 18
 
 
@@ -54,7 +54,10 @@ inline pros::Motor intake_motor(INTAKE_MOTOR);
 
 inline pros::Motor wall_stake_motor(20);
 
-inline pros::Imu imu_sensor(IMU);
+inline pros::Imu imu(IMU);
 
 inline pros::adi::Pneumatics clamp_piston(CLAMP_PORT, false);
 inline pros::adi::Pneumatics doinker_piston(DOINKER_PORT, false);
+
+inline pros::Rotation vertical_odom(ODOM_VERTICAL);
+inline pros::Rotation horizontal_odom(ODOM_HORIZONTAL);
