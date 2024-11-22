@@ -3,7 +3,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/trackingWheel.hpp"
 #include <iostream>
-//#include <sys/_intsup.h>
+// #include <sys/_intsup.h>
 #include "config.h"
 
 bool intake = 0;
@@ -14,10 +14,12 @@ bool clamp = 0;
 bool doinkPosition = 0;
 bool doinker = 0;
 
+
 bool teamColour = 0;//0 for red
 
 
 //Ladybrown
+
 int wallState = 0;
 int wallStakeAngle = 0;
 double wallStakePos = 0;
@@ -37,37 +39,35 @@ lemlib::Drivetrain drivetrain(&left_mg,                   // left motor group
                               2                           // horizontal drift is 2 (for now)
 );
 
-// lemlib::TrackingWheel horizontal_tracking_wheel(&adi_encoder, lemlib::Omniwheel::NEW_275, -6.5);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_odom, lemlib::Omniwheel::NEW_275, 1);
 
-// lemlib::TrackingWheel vertical_tracking_wheel(&rotation_sensor, lemlib::Omniwheel::NEW_275, 0);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_odom, lemlib::Omniwheel::NEW_275, -1.5);
 
-/*lemlib::OdomSensors sensors(
-    &vertical_tracking_wheel, // vertical tracking wheel 1, set to null
-    nullptr, // vertical tracking wheel 2, set to nullptr as we have none
+lemlib::OdomSensors sensors(
+    &vertical_tracking_wheel,   // vertical tracking wheel 1, set to null
+    nullptr,                    // vertical tracking wheel 2, set to nullptr as we have none
     &horizontal_tracking_wheel, // horizontal tracking wheel 1
-    nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a
-             // second one
-    &imu     // inertial sensor
-);*/
-
-lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, &imu_sensor);
+    nullptr,                    // horizontal tracking wheel 2, set to nullptr as we don't have a
+                                // second one
+    &imu                        // inertial sensor
+);
 
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(10,  // proportional gain (kP)
                                               0,   // integral gain (kI)
-                                              3,   // derivative gain (kD)
-                                              3,   // anti windup
-                                              1,   // small error range, in inches
-                                              100, // small error range timeout, in milliseconds
-                                              3,   // large error range, in inches
-                                              500, // large error range timeout, in milliseconds
-                                              20   // maximum acceleration (slew)
+                                              8,   // derivative gain (kD)
+                                              0,   // anti windup
+                                              0,   // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0,   // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
+                                              100   // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2,   // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(5,   // proportional gain (kP)
                                               0,   // integral gain (kI)
-                                              10,  // derivative gain (kD)
+                                              1,  // derivative gain (kD)
                                               3,   // anti windup
                                               1,   // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
@@ -111,9 +111,31 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
 void initialize()
 {
     pros::lcd::initialize(); // initialize brain screen
-    chassis.calibrate(); // calibrate sensors
+    chassis.calibrate();     // calibrate sensors
     // print position to brain screen
     // wall_stake_rotation.reset_position();
+
+    pros::Task screen_task([&]()
+                           {
+                               while (true)
+                               {
+                                   pros::lcd::print(0, "X: %f", chassis.getPose().x);
+                                   pros::delay(50);         // x
+                                   pros::lcd::print(1, "Y: %f", chassis.getPose().y);
+                                   pros::delay(50);                                           // y
+                                   pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+                                   pros::delay(50);
+                               }
+                               //                            // print robot location to the brain screen
+                               //                            //   pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
+                               //                            //   pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
+                               //                            //   pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+                               //                            pros::lcd::print(0, "Readout: %d", wall_stake_rotation.get_position());
+                               //                            pros::lcd::print(1, "Low: %d", low);
+                               //    pros::lcd::print(0, "TEST");
+                               //                            pros::lcd::print(2, "High: %d", high);
+                               //                            pros::lcd::print(3, "On target: %d", onTarget);
+                           });
 }
 
 /**
@@ -147,36 +169,38 @@ void competition_initialize() {}
  */
 void autonomous()
 {
-    // int delta = 1000;
-    // chassis.moveToPoint(0, 43, 4000);
-    // pros::delay(delta);
-    // chassis.turnToHeading(30, 4000);
-    // pros::delay(delta);
-    // clamp_piston.extend();
+    chassis.setPose(0, 0, 0);
+    pros::delay(50);
+    // chassis.turnToHeading(20, 100);
     // pros::delay(100);
-    // chassis.moveToPoint(0, 10, 4000, {.forwards = false});
-    // pros::delay(delta);
-    // clamp_piston.retract();
-    // pros::delay(100);
-    // chassis.turnToHeading(225, 4000);
-    // pros::delay(delta);
-    // chassis.moveToPoint(0, 15, 4000, {.forwards = false});
-    // pros::delay(delta);
-    // doinker_piston.extend();
-    // pros::delay(100);
-    // intake_motor.move(127);
+    chassis.moveToPoint(0, -33, 1000, {.forwards = false}, true);
+    pros::delay(500);
+    chassis.turnToHeading(330, 1000);
     pros::delay(100);
-    chassis.moveToPoint(0, -30, 4000, {.forwards = false, .maxSpeed=60});
+    chassis.moveToPoint(6, -45, 1000, {.forwards = false, .maxSpeed = 30}, true);
+    pros::delay(1200);
+    doinker_piston.extend();
+    pros::delay(50);
+    chassis.turnToHeading(20, 1000);
+    pros::delay(700);
+    intake_motor.move(127);
+    pros::delay(10);
+    intake_half_motor.move(127);
+    pros::delay(10);
+    chassis.moveToPoint(8, -30, 1000);
+    pros::delay(3000);
+    intake_motor.move(0);
+    pros::delay(10);
+    intake_half_motor.move(0);
+    pros::delay(10);
+    doinker_piston.retract();
+    pros::delay(100);
+    chassis.turnToHeading(120, 1000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE}); //angle was 145
+    pros::delay(200);
+    chassis.moveToPoint(-8, -27, 1000, {.forwards = false, .maxSpeed = 30});
     pros::delay(2000);
     doinker_piston.extend();
-    pros::delay(300);
-    intake_motor.move(-127);
-    pros::delay(3000);
-    // intake_motor.move(0);
-    // pros::delay(300);
-    // chassis.turnToHeading(290, 4000);
-    // pros::delay(300);
-    // chassis.moveToPoint(20, 20, 4000, {.maxSpeed=60});
+    pros::delay(100);
 }
 
 /**
@@ -316,14 +340,71 @@ void opcontrol()
             doinker = !doinker;
         }
 
+
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
+          
+        }
+
+        // ladybrown
+
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+        {
+            wallState++;
+            wallState %= 3;
+
+            if (wallState == 0)
+            {
+                resetWallStake = true;
+                extendFull = false;
+                primedPosition = 0;
+            }
+
+            if (wallState == 1)
+            {
+                resetWallStake = false;
+                primedPosition = 10;
+                extendFull = false;
+            }
+
+            if (wallState == 2)
+            {
+                primedPosition = 0;
+                resetWallStake = false;
+                extendFull = true;
+            }
+        }
+
+        if (resetWallStake)
+        {
+            wall_stake_motor.move(-127);
+        }
+
+        if (primedPosition > 0)
+        {
+            wall_stake_motor.move(127);
+            primedPosition--;
+        }
+
+        if (extendFull)
+        {
+            wall_stake_motor.move(127);
+        }
+
+        int currentPosition = (int)(wall_stake_motor.get_position() * 1000);
+        if (currentPosition == wallStakePos)
+        {
+            resetWallStake = false;
+            primedPosition = 0;
+            extendFull = false;
+            wallStakePos = currentPosition;
+        }
+
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+        {
+
             intakeSlowdown = !intakeSlowdown;
         }
-        //wall_stake_motor.move_absolute(wallStakePos, 100);
-
-
-
-
+        // wall_stake_motor.move_absolute(wallStakePos, 100);
 
         // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         // {
@@ -394,7 +475,7 @@ void opcontrol()
         }
 
         int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
-        intakePower = intakePower * 127 / (1+5*intakeSlowdown);
+        intakePower = intakePower * 127 / (1 + 5 * intakeSlowdown);
         intake_motor.move(intakePower);
         intake_half_motor.move(intakePower);
 
@@ -472,6 +553,7 @@ void opcontrol()
                                       //                            pros::lcd::print(2, "High: %d", high);
                                       //                            pros::lcd::print(3, "On target: %d", onTarget);
                                });
+
 
         pros::delay(25);
     }
