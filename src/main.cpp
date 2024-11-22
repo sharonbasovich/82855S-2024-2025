@@ -14,13 +14,18 @@ bool clamp = 0;
 bool doinkPosition = 0;
 bool doinker = 0;
 
+bool teamColour = 0;//0 for red
+
+
 //Ladybrown
 int wallState = 0;
 int wallStakeAngle = 0;
-int wallStakePos = 0;
+double wallStakePos = 0;
+double currentPosition = 0;
 bool intakeSlowdown = false;
 bool resetWallStake = false;
 bool extendFull = false;
+bool PPosition = false;
 int primedPosition = 0;
 
 // drivetrain settings
@@ -187,9 +192,87 @@ void autonomous()
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+void ladybrown(){
+    //ladybrown
+        
+    while (true){
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)){
+            wallState++;
+            wallState %= 3;
+            
+            if(wallState==0){
+                resetWallStake = true;
+                PPosition = false;
+                extendFull=false;
 
+            }
+            if(wallState == 1){
+                extendFull = false;
+                PPosition = true;
+                resetWallStake = false;
+
+            }
+            if(wallState == 2){
+                extendFull = true;
+                resetWallStake = false;
+                PPosition = false;
+            }
+
+            
+        }
+
+        
+/**
+            if(wallState==1){
+                resetWallStake = false;
+                PPosition = true;
+                extendFull = false;
+            }
+
+            if(wallState==2){
+                resetWallStake = false;
+                extendFull = true;
+                
+            }
+*/
+        /**/
+        if(extendFull){
+            //wall_stake_motor.set_brake_mode(MOTOR_BRAKE_COAST);
+            wall_stake_motor.move(127);
+            //pros::delay(6000);
+            // m    wall_stake_motor.move(0);
+        }
+        if (PPosition){
+            wall_stake_motor.move(70);
+            pros::delay(2000);
+            wall_stake_motor.move(0);
+            //wall_stake_motor.set_brake_mode(MOTOR_BRAKE_HOLD);
+
+        }
+        if(resetWallStake){
+            //wall_stake_motor.set_brake_mode(MOTOR_BRAKE_COAST);
+            wall_stake_motor.move(-127);
+            //pros::delay(6000);
+            //wall_stake_motor.move(0);
+
+        }
+
+        wallStakePos = currentPosition;
+        currentPosition = (wall_stake_motor.get_position());
+        
+        if(currentPosition == wallStakePos){
+            
+            resetWallStake=false;
+            extendFull = false;
+            wall_stake_motor.move(0);
+        }
+        
+        pros::delay(25);
+    }
+}
 void opcontrol()
 {
+    pros::Task ladybrown_task(ladybrown);
     // button guide:
     /*
     joysticks: drivetrain
@@ -231,54 +314,6 @@ void opcontrol()
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
         {
             doinker = !doinker;
-        }
-
-//ladybrown
-        
-
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
-            wallState++;
-            wallState%=3;
-
-            if(wallState==0){
-                resetWallStake = true;
-                extendFull=false;
-                primedPosition = 0;
-            }
-
-            if(wallState==1){
-                resetWallStake = false;
-                primedPosition = 10;
-                extendFull = false;
-            }
-
-            if(wallState==2){
-                primedPosition = 0;
-                resetWallStake = false;
-                extendFull = true;
-            }
-        }
-
-        
-        if(resetWallStake){
-            wall_stake_motor.move(-127);
-        }
-
-        if(primedPosition>0){
-            wall_stake_motor.move(127);
-            primedPosition--;
-        }
-
-        if(extendFull){
-            wall_stake_motor.move(127);
-        }
-
-        int currentPosition = (int)(wall_stake_motor.get_position()*1000);
-        if(currentPosition == wallStakePos){
-            resetWallStake=false;
-            primedPosition = 0;
-            extendFull = false;
-            wallStakePos = currentPosition;
         }
 
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)){
@@ -423,11 +458,17 @@ void opcontrol()
                                    //                            pros::lcd::print(0, "Readout: %d", wall_stake_rotation.get_position());
                                    //                            pros::lcd::print(1, "Low: %d", low);
                                 //    pros::lcd::print(0, "TEST");
-                                      pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
-                                      pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
-                                      pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-                                      pros::lcd::print(3, "leftY: %f", leftY);
-                                      pros::lcd::print(4, "ladybrown: %f", wall_stake_motor.get_position());
+                                      //pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
+                                      //pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
+                                      //pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+                                      //pros::lcd::print(3, "leftY: %f", leftY);
+                                      
+                                      pros::lcd::print(0, "reset: %d", resetWallStake);
+                                      pros::lcd::print(1, "prime: %d", primedPosition);
+                                      pros::lcd::print(2, "full: %d", extendFull);
+                                      pros::lcd::print(3, "a %d", wallState);
+                                      pros::lcd::print(4, "reset: %f", Optic.get_saturation());
+                                      pros::lcd::print(5, "prime: %f", Dist1.get());
                                       //                            pros::lcd::print(2, "High: %d", high);
                                       //                            pros::lcd::print(3, "On target: %d", onTarget);
                                });
@@ -435,7 +476,7 @@ void opcontrol()
         pros::delay(25);
     }
 }
-/*
+
 bool ejectRing()
 {
     // optical sensor
@@ -458,4 +499,4 @@ bool ejectRing()
 
     return (ringIntakeDist <= 20 && (teamColour != redOrBlu));
     // returns true if the ring is the wrong colour
-}*/
+}

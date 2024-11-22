@@ -58,3 +58,6 @@ inline pros::Imu imu_sensor(IMU);
 
 inline pros::adi::Pneumatics clamp_piston(CLAMP_PORT, false);
 inline pros::adi::Pneumatics doinker_piston(DOINKER_PORT, false);
+
+inline pros::Optical Optic(0);
+inline pros::Distance Dist1(0);
