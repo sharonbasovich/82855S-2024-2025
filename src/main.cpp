@@ -162,38 +162,7 @@ void competition_initialize() {}
  */
 void autonomous()
 {
-    chassis.setPose(0, 0, 0);
-    pros::delay(50);
-    // chassis.turnToHeading(20, 100);
-    // pros::delay(100);
-    chassis.moveToPoint(0, -33, 1000, {.forwards = false}, true);
-    pros::delay(500);
-    chassis.turnToHeading(330, 1000);
-    pros::delay(100);
-    chassis.moveToPoint(6, -45, 1000, {.forwards = false, .maxSpeed = 30}, true);
-    pros::delay(1200);
-    doinker_piston.extend();
-    pros::delay(50);
-    chassis.turnToHeading(20, 1000);
-    pros::delay(700);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(8, -30, 1000);
-    pros::delay(3000);
-    intake_motor.move(0);
-    pros::delay(10);
-    intake_half_motor.move(0);
-    pros::delay(10);
-    doinker_piston.retract();
-    pros::delay(100);
-    chassis.turnToHeading(120, 1000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE}); //angle was 145
-    pros::delay(200);
-    chassis.moveToPoint(-8, -27, 1000, {.forwards = false, .maxSpeed = 30});
-    pros::delay(2000);
-    doinker_piston.extend();
-    pros::delay(100);
+    
 }
 
 /**
