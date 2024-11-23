@@ -216,6 +216,39 @@ void autonomous()
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
+void ladyBrown2(){
+    
+    bool full = true;
+    while (true){
+        
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)){
+            if (wallState == 0 ){
+            wall_stake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+            wall_stake_motor.move(30);
+            pros::delay(2);
+            wall_stake_motor.move(0);
+
+
+            wallState += 1;
+            }
+            else if (wallState == 1){
+                
+                wall_stake_motor.move(127);
+
+                wallState += 1;
+            }
+            else if(wallState == 2){
+                wall_stake_motor.move(-127);
+                wallState = 0;
+            }
+        }
+        
+        
+        pros::delay(25);
+
+    }
+}
 void ladybrown(){
     //ladybrown
         
@@ -240,6 +273,7 @@ void ladybrown(){
                 extendFull = true;
                 resetWallStake = false;
                 PPosition = false;
+                wallState = 0;
             }
 
             
@@ -263,7 +297,7 @@ void ladybrown(){
         if(extendFull){
             //wall_stake_motor.set_brake_mode(MOTOR_BRAKE_COAST);
             wall_stake_motor.move(127);
-            //pros::delay(6000);
+
             // m    wall_stake_motor.move(0);
         }
         if (PPosition){
@@ -276,6 +310,7 @@ void ladybrown(){
         if(resetWallStake){
             //wall_stake_motor.set_brake_mode(MOTOR_BRAKE_COAST);
             wall_stake_motor.move(-127);
+
             //pros::delay(6000);
             //wall_stake_motor.move(0);
 
@@ -296,7 +331,7 @@ void ladybrown(){
 }
 void opcontrol()
 {
-    pros::Task ladybrown_task(ladybrown);
+    pros::Task ladybrown_task(ladyBrown2);
     // button guide:
     /*
     joysticks: drivetrain
