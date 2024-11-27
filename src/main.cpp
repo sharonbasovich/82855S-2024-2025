@@ -219,14 +219,14 @@ void autonomous()
 
 void ladyBrown2(){
     
-    bool full = true;
+
     while (true){
-        
+        currentPosition = wall_stake_motor.get_position();
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)){
             if (wallState == 0 ){
             wall_stake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
             wall_stake_motor.move(30);
-            pros::delay(2);
+            pros::delay(250);
             wall_stake_motor.move(0);
 
 
@@ -249,10 +249,13 @@ void ladyBrown2(){
 
     }
 }
+
+
 void ladybrown(){
     //ladybrown
         
     while (true){
+
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)){
             wallState++;
             wallState %= 3;
