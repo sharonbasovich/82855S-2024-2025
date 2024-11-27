@@ -15,7 +15,7 @@
 #define WHEEL_DIAMETER 3.25
 #define DRIVE_RPM 450
 
-#define INTAKE_MOTOR -6
+#define INTAKE_MOTOR -6 //-6
 #define INTAKE_HALF_MOTOR -7
 
 #define DOINKER_PORT 'G'
@@ -30,6 +30,7 @@
 #define ODOM_VERTICAL -12
 #define ODOM_HORIZONTAL 18
 
+#define RING_DISTANCE_SENSOR 5
 
 
 
@@ -59,8 +60,8 @@ inline pros::Imu imu(IMU);
 inline pros::adi::Pneumatics clamp_piston(CLAMP_PORT, false);
 inline pros::adi::Pneumatics doinker_piston(DOINKER_PORT, false);
 
-inline pros::Optical Optic(0);
-inline pros::Distance Dist1(0);
+
+inline pros::Distance ring_distance_sensor(RING_DISTANCE_SENSOR);
 
 inline pros::Rotation vertical_odom(ODOM_VERTICAL);
 inline pros::Rotation horizontal_odom(ODOM_HORIZONTAL);
