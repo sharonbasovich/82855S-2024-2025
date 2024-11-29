@@ -50,13 +50,13 @@ lemlib::OdomSensors sensors(
     &horizontal_tracking_wheel, // horizontal tracking wheel 1
     nullptr,                    // horizontal tracking wheel 2, set to nullptr as we don't have a
                                 // second one
-    &imu                        // inertial sensor
+    &imu                       // inertial sensor
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(8, // proportional gain (kP)
                                               0,  // integral gain (kI)
-                                              8,  // derivative gain (kD)
+                                              10,  // derivative gain (kD)
                                               0,  // anti windup
                                               0,  // small error range, in inches
                                               0,  // small error range timeout, in milliseconds
@@ -66,9 +66,9 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(5,   // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(6,   // proportional gain (kP)
                                               0,   // integral gain (kI)
-                                              1,   // derivative gain (kD)
+                                              18,   // derivative gain (kD)
                                               3,   // anti windup
                                               1,   // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
@@ -133,6 +133,11 @@ void initialize()
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
+ void getCurrentHeading(){
+    while (true){
+	pros::lcd::print(5, "%f", fmod(imu.get_rotation(),360.0));
+    }
+ }
 void disabled() {}
 
 /**
@@ -174,8 +179,12 @@ void holdRing()
     }
 }
 
-void autonomous()
-{
+void autonomous(){
+    
+
+    
+
+
     // prog skills
     
     chassis.setPose(-64.7, -37.2, 220);
@@ -490,6 +499,7 @@ void opcontrol()
     while (true)
     {
         // get left y and right x positions
+    
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
@@ -532,116 +542,13 @@ void opcontrol()
         {
         }
 
-        // ladybrown
-
-        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-        // {
-        //     wallState++;
-        //     wallState %= 3;
-
-        //     if (wallState == 0)
-        //     {
-        //         resetWallStake = true;
-        //         extendFull = false;
-        //         primedPosition = 0;
-        //     }
-
-        //     if (wallState == 1)
-        //     {
-        //         resetWallStake = false;
-        //         primedPosition = 10;
-        //         extendFull = false;
-        //     }
-
-        //     if (wallState == 2)
-        //     {
-        //         primedPosition = 0;
-        //         resetWallStake = false;
-        //         extendFull = true;
-        //     }
-        // }
-
-        // if (resetWallStake)
-        // {
-        //     wall_stake_motor.move(-127);
-        // }
-
-        // if (primedPosition > 0)
-        // {
-        //     wall_stake_motor.move(127);
-        //     primedPosition--;
-        // }
-
-        // if (extendFull)
-        // {
-        //     wall_stake_motor.move(127);
-        // }
-
-        // int currentPosition = (int)(wall_stake_motor.get_position() * 1000);
-        // if (currentPosition == wallStakePos)
-        // {
-        //     resetWallStake = false;
-        //     primedPosition = 0;
-        //     extendFull = false;
-        //     wallStakePos = currentPosition;
-        // }
 
         // // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         // // {
 
         //     intakeSlowdown = !intakeSlowdown;
-        // }
-        // wall_stake_motor.move_absolute(wallStakePos, 100);
+        // 
 
-        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-        // {
-        //     wallStakeIdle = 1;
-        //     wallStakeGrab = 0;
-        //     wallStakeSwing = 0;
-        // } // home position wall stake
-
-        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
-        // {
-
-        //     if (wallStakeIdle)
-        //     {
-        //         wallStakeGrab = 1;
-        //         wallStakeSwing = 0;
-        //     }
-        //     else if (wallStakeGrab)
-        //     {
-        //         wallStakeGrab = 0;
-        //         wallStakeSwing = 1;
-        //     }
-        //     else if (wallStakeSwing)
-        //     {
-        //         wallStakeGrab = 1;
-        //         wallStakeSwing = 0;
-        //     }
-        //     wallStakeIdle = 0;
-        // }
-
-        // // calculate required angle
-        // wallStakeAngle = (wallStakeGrab * LOAD_ANGLE) + (wallStakeSwing * SCORE_ANGLE);
-        // int low = (wall_stake_rotation.get_position() / 100) - 10;
-        // int high = (wall_stake_rotation.get_position() / 100) + 10;
-        // bool onTarget = low <= wallStakeAngle && wallStakeAngle <= high;
-
-        // if (onTarget)
-        // {
-        //     wall_stake_motor.move(0);
-        // } else {
-        //     if (wallStakeAngle > low)
-        //     {
-        //         wall_stake_motor.move(127);
-        //         // go backwards
-        //     }
-        //     else
-        //     {
-        //         wall_stake_motor.move(127);
-        //         // go forwards
-        //     }
-        // }
 
         if (doinker)
         {
@@ -666,56 +573,6 @@ void opcontrol()
         intake_motor.move(intakePower);
         intake_half_motor.move(intakePower);
 
-        // int distToGoal = Dist2.get();
-        //  int confidenceToGoal = Dist2.get_confidence();
-
-        // bool mechDetach = master.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
-        // bool mechClose = (distToGoal <= 30 && !mechDetach); // actiate mech if it detects a goal
-
-        // bool hanglock = master.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
-        /*
-                if (mechClose)
-                {
-                    MogoPiston1.extend();
-                    MogoPiston2.extend();
-                }
-                else
-                {
-                    MogoPiston1.retract();
-                    MogoPiston2.retract();
-                }
-                */
-        // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2) && doinkerCooldown == 0)
-        // {
-        //     doinkPosition = !doinkPosition;
-        //     doinkerCooldown = 10;
-        //     // if(doinkPosition) doinkerArm.extend();
-        //     // else doinkerArm.retract();
-        // }
-
-        /*
-         if (wallStakeIdle || wallStakeGrab || wallStakeSwing)
-         {
-             int position = wallStakeGrab*(1) + wallStakeIdle*(1) + wallStakeSwing*(1);
-             wall_stake_arm.move_absolute(position, 100);
-         }*/
-
-        // if (intake || outake)
-        //{
-
-        /*uncomment if were using this
-        if(ejectRing()){
-            Eject.extend();
-            pros::delay(10);
-            Eject.retract();
-        }
-        */
-        //}
-
-        // // delay to save resources
-        // intakeCooldown = std::max(intakeCooldown - 1, 0);
-        // outakeCooldown = std::max(outakeCooldown - 1, 0);
-        // doinkerCooldown = std::max(doinkerCooldown - 1, 0);
 
         pros::delay(25);
     }
