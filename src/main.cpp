@@ -185,25 +185,26 @@ void autonomous(){
     
 
 
+
     // prog skills
     
-    chassis.setPose(-64.7, -37.2, 220);
+    chassis.setPose(-66.7, -31.9, 220);
     pros::delay(200);
-    chassis.moveToPoint(-47.4, -22, 2000, {.forwards = false, .maxSpeed = 40});
+    chassis.moveToPoint(-47.4, -24, 2000, {.forwards = false, .maxSpeed = 40});
     pros::delay(2000);
     doinker_piston.extend();
     pros::delay(1000);
-    chassis.turnToHeading(180, 2000);
+    chassis.turnToHeading(190, 2000);
     pros::delay(2000);
     intake_motor.move(127);
     pros::delay(10);
     intake_half_motor.move(127);
     pros::delay(10);
-    chassis.moveToPoint(-47, -40, 2000, {.maxSpeed = 40});
+    chassis.moveToPoint(-47, -41, 2000, {.maxSpeed = 40});
     pros::delay(2000);
-    chassis.turnToHeading(270, 2000, {.maxSpeed = 40});
+    chassis.turnToHeading(280, 2000, {.maxSpeed = 40});
     pros::delay(2000);
-    chassis.moveToPoint(-60, -40, 2000, {.maxSpeed = 40});
+    chassis.moveToPoint(-60, -42, 2000, {.maxSpeed = 40});
     pros::delay(2000);
     chassis.moveToPoint(-47, -40, 2000, {.forwards = false, .maxSpeed = 40});
     pros::delay(2000);
