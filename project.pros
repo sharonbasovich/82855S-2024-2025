@@ -299,7 +299,8 @@
     },
     "upload_options": {
       "slot": 3,
-      "icon": "planet"
+      "icon": "planet",
+      "description": "PID TUNE"
     },
     "use_early_access": false
   }
