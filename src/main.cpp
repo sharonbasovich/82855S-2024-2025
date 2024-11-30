@@ -50,13 +50,13 @@ lemlib::OdomSensors sensors(
     &horizontal_tracking_wheel, // horizontal tracking wheel 1
     nullptr,                    // horizontal tracking wheel 2, set to nullptr as we don't have a
                                 // second one
-    &imu                       // inertial sensor
+    &imu                        // inertial sensor
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(8, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(8,  // proportional gain (kP)
                                               0,  // integral gain (kI)
-                                              10,  // derivative gain (kD)
+                                              10, // derivative gain (kD)
                                               0,  // anti windup
                                               0,  // small error range, in inches
                                               0,  // small error range timeout, in milliseconds
@@ -68,7 +68,7 @@ lemlib::ControllerSettings lateral_controller(8, // proportional gain (kP)
 // angular PID controller
 lemlib::ControllerSettings angular_controller(6,   // proportional gain (kP)
                                               0,   // integral gain (kI)
-                                              18,   // derivative gain (kD)
+                                              18,  // derivative gain (kD)
                                               3,   // anti windup
                                               1,   // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
@@ -133,11 +133,13 @@ void initialize()
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
- void getCurrentHeading(){
-    while (true){
-	pros::lcd::print(5, "%f", fmod(imu.get_rotation(),360.0));
+void getCurrentHeading()
+{
+    while (true)
+    {
+        pros::lcd::print(5, "%f", fmod(imu.get_rotation(), 360.0));
     }
- }
+}
 void disabled() {}
 
 /**
@@ -175,19 +177,89 @@ void holdRing()
             pros::delay(10);
             intake_half_motor.move(0);
             pros::delay(10);
+            break;
         }
     }
 }
 
-void autonomous(){
-    
+void intakeForward()
+{
+    intake_motor.move(127);
+    pros::delay(20);
+    intake_half_motor.move(127);
+    pros::delay(20);
+}
 
-    
+void intakeBackward()
+{
+    intake_motor.move(-127);
+    pros::delay(20);
+    intake_half_motor.move(-127);
+    pros::delay(20);
+}
 
+void intakeStop()
+{
+    intake_motor.move(0);
+    pros::delay(20);
+    intake_half_motor.move(0);
+    pros::delay(20);
+}
 
+void autonomous()
+{
 
+    // blue solo winpoint
+    //left side
+    chassis.setPose(59.1, -14.7, 320);
+    pros::delay(50);
+    intakeForward();
+    chassis.moveToPoint(49, -3, 1000, {.maxSpeed = 40}); // grab ring 1
+    pros::delay(100);
+    chassis.moveToPoint(53, -8, 1000, {.forwards = false}); // push away ring 1
+    pros::delay(1000);
+    hold = true;
+    chassis.moveToPoint(46, 1, 1000, {.maxSpeed = 60}); // grab ring 2
+    pros::delay(100);
+    pros::Task holdRing_task(holdRing);
+    pros::delay(1500);
+    clamp_piston.extend();
+    pros::delay(50);
+    chassis.turnToHeading(150, 1000, {.direction = AngularDirection::CW_CLOCKWISE});
+    pros::delay(1000);
+    clamp_piston.retract();
+    pros::delay(50);
+    chassis.turnToHeading(90, 700);
+    pros::delay(700);
+    chassis.moveToPoint(61, 2, 1300, {.maxSpeed = 50}); // go to alliance stake
+    pros::delay(1300);
+    wall_stake_motor.move(127);
+    pros::delay(1000);
+    chassis.moveToPoint(53, 0, 800, {.forwards = false});
+    pros::delay(400);
+    wall_stake_motor.move(-127);
+    pros::delay(300);
+    wall_stake_motor.move(0);
+    pros::delay(100);
+    chassis.turnToHeading(50, 800);
+    pros::delay(10);
+    intakeStop();
+    hold = false;
+    pros::delay(1000);
+    chassis.moveToPoint(35, -15, 1000, {.forwards = false});
+    pros::delay(1000);
+    chassis.moveToPoint(26, -22, 1000, {.forwards = false, .maxSpeed = 40});
+    pros::delay(800);
+    doinker_piston.extend();
+    pros::delay(300);
+    intakeForward();
+    pros::delay(50);
+    chassis.moveToPoint(27, -51, 1000);
+    pros::delay(2000);
+    chassis.moveToPoint(25, -8, 10000);
+    pros::delay(10000);
     // prog skills
-    
+    /*
     chassis.setPose(-66.7, -31.9, 220);
     pros::delay(200);
     chassis.moveToPoint(-47.4, -24, 2000, {.forwards = false, .maxSpeed = 40});
@@ -222,6 +294,7 @@ void autonomous(){
     pros::delay(500);
     chassis.moveToPoint(-47, -47, 3000, {.maxSpeed = 40});
     pros::delay(3000);
+    */
 
     // red side
     /*
@@ -273,7 +346,7 @@ void autonomous(){
     chassis.moveToPoint(14, -42, 2000, {.maxSpeed = 30});
     pros::delay(2000);
     */
-   
+
     // blue side
     /*
     chassis.moveToPoint(0, -33, 1000, {.forwards = false}, true); // mid rush
@@ -500,7 +573,7 @@ void opcontrol()
     while (true)
     {
         // get left y and right x positions
-    
+
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
@@ -543,13 +616,11 @@ void opcontrol()
         {
         }
 
-
         // // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         // // {
 
         //     intakeSlowdown = !intakeSlowdown;
-        // 
-
+        //
 
         if (doinker)
         {
@@ -573,7 +644,6 @@ void opcontrol()
         intakePower = intakePower * 127 / (1 + 5 * intakeSlowdown);
         intake_motor.move(intakePower);
         intake_half_motor.move(intakePower);
-
 
         pros::delay(25);
     }
