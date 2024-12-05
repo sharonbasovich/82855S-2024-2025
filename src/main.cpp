@@ -1,5 +1,6 @@
 #include "main.h"
 #include "json.hpp"
+#include "logging.hpp"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "lemlib/chassis/trackingWheel.hpp"
 #include <iostream>
@@ -107,27 +108,46 @@ void initialize()
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate();     // calibrate sensors
 
-    pros::Task screen_task([&]()
-                           {
-                               while (true)
-                               {
-                                   pros::lcd::print(0, "stationary: %d", stationary);
-                                   pros::lcd::print(1, "lastPosition: %f", lastPosition);
-                                   pros::lcd::print(2, "get_position: %d", ring_distance_sensor.get());
-                                   pros::delay(20);
-                               }
-                               //                            // print robot location to the brain screen
-                               //                            //   pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
-                               //                            //   pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
-                               //                            //   pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-                               //                            pros::lcd::print(0, "Readout: %d", wall_stake_rotation.get_position());
-                               //                            pros::lcd::print(1, "Low: %d", low);
-                               //    pros::lcd::print(0, "TEST");
-                               //                            pros::lcd::print(2, "High: %d", high);
-                               //                            pros::lcd::print(3, "On target: %d", onTarget);
-                           });
+    std::cout << "foxglove" << std::endl; //flag to indicate new session
+
+    pros::Task controller_task(updateController); //prints to controller, comment out to get back default ui
+    updateScreen(); //prints to brain screen
 }
 
+pros::Task screen_task;
+
+void updateScreen() {
+    screen_task = pros::Task([]()
+                             {
+                                 while (true)
+                                 {
+                                    //up to 8 lines (0-7)
+                                    //use %d for integer and boolean
+                                    //use %f for floating point
+                                    //if the wrong one is used could have 0 or huge random output
+                                    //  pros::lcd::print(<0-7>, "var: <%d or %f>", <valueToPrint>);
+                                     pros::delay(20);
+                                 } });
+}
+
+void updateController()
+{
+    while (true)
+    {
+        // prints to controller up to 3 rows (this is the max possible)
+        master.clear();
+
+        // up to 3 lines (0-2)
+        // use %d for integer and boolean
+        // use %f for floating point
+        // if the wrong one is used could have 0 or huge random output
+        master.print(0, 0, "check: %d", checkState);
+        master.print(1, 0, "wall %d", wallState);
+        master.print(2, 0, "current %d", ring_distance_sensor.get());
+
+        pros::delay(50);
+    }
+}
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
@@ -140,6 +160,7 @@ void getCurrentHeading()
         pros::lcd::print(5, "%f", fmod(imu.get_rotation(), 360.0));
     }
 }
+
 void disabled() {}
 
 /**
@@ -209,264 +230,7 @@ void intakeStop()
 void autonomous()
 {
 
-    // blue solo winpoint
-    //left side
-    chassis.setPose(59.1, -14.7, 320);
-    pros::delay(50);
-    intakeForward();
-    chassis.moveToPoint(49, -3, 1000, {.maxSpeed = 40}); // grab ring 1
-    pros::delay(100);
-    chassis.moveToPoint(53, -8, 1000, {.forwards = false}); // push away ring 1
-    pros::delay(1000);
-    hold = true;
-    chassis.moveToPoint(46, 1, 1000, {.maxSpeed = 60}); // grab ring 2
-    pros::delay(100);
-    pros::Task holdRing_task(holdRing);
-    pros::delay(1500);
-    clamp_piston.extend();
-    pros::delay(50);
-    chassis.turnToHeading(150, 1000, {.direction = AngularDirection::CW_CLOCKWISE});
-    pros::delay(1000);
-    clamp_piston.retract();
-    pros::delay(50);
-    chassis.turnToHeading(90, 700);
-    pros::delay(700);
-    chassis.moveToPoint(61, 2, 1300, {.maxSpeed = 50}); // go to alliance stake
-    pros::delay(1300);
-    wall_stake_motor.move(127);
-    pros::delay(1000);
-    chassis.moveToPoint(53, 0, 800, {.forwards = false});
-    pros::delay(400);
-    wall_stake_motor.move(-127);
-    pros::delay(300);
-    wall_stake_motor.move(0);
-    pros::delay(100);
-    chassis.turnToHeading(50, 800);
-    pros::delay(10);
-    intakeStop();
-    hold = false;
-    pros::delay(1000);
-    chassis.moveToPoint(35, -15, 1000, {.forwards = false});
-    pros::delay(1000);
-    chassis.moveToPoint(26, -22, 1000, {.forwards = false, .maxSpeed = 40});
-    pros::delay(800);
-    doinker_piston.extend();
-    pros::delay(300);
-    intakeForward();
-    pros::delay(50);
-    chassis.moveToPoint(27, -51, 1000);
-    pros::delay(2000);
-    chassis.moveToPoint(25, -8, 10000);
-    pros::delay(10000);
-    // prog skills
-    /*
-    chassis.setPose(-66.7, -31.9, 220);
-    pros::delay(200);
-    chassis.moveToPoint(-47.4, -24, 2000, {.forwards = false, .maxSpeed = 40});
-    pros::delay(2000);
-    doinker_piston.extend();
-    pros::delay(1000);
-    chassis.turnToHeading(190, 2000);
-    pros::delay(2000);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(-47, -41, 2000, {.maxSpeed = 40});
-    pros::delay(2000);
-    chassis.turnToHeading(280, 2000, {.maxSpeed = 40});
-    pros::delay(2000);
-    chassis.moveToPoint(-60, -42, 2000, {.maxSpeed = 40});
-    pros::delay(2000);
-    chassis.moveToPoint(-47, -40, 2000, {.forwards = false, .maxSpeed = 40});
-    pros::delay(2000);
-    chassis.turnToHeading(180, 2000);
-    pros::delay(2000);
-    chassis.moveToPoint(-47, -47, 3000, {.maxSpeed = 40});
-    pros::delay(3000);
-    chassis.moveToPoint(-47, -40, 2000, {.forwards = false, .maxSpeed = 40});
-    pros::delay(2000);
-    chassis.turnToHeading(45, 2000);
-    pros::delay(2000);
-    chassis.moveToPoint(-71, -71, 2000, {.forwards = false});
-    pros::delay(2000);
-    doinker_piston.retract();
-    pros::delay(500);
-    chassis.moveToPoint(-47, -47, 3000, {.maxSpeed = 40});
-    pros::delay(3000);
-    */
 
-    // red side
-    /*
-    chassis.moveToPoint(0, -33, 1000, {.forwards = false}, true); // mid rush
-    pros::delay(500);
-    chassis.turnToHeading(-330, 1000);
-    pros::delay(50);
-    chassis.moveToPoint(-5.9, -44, 1500, {.forwards = false, .maxSpeed = 25}, true); // go to goal 1 -6.2 -45
-    pros::delay(1300);
-    doinker_piston.extend(); // grab mogo 1
-    pros::delay(500);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(1000);
-    intake_motor.move(0);
-    pros::delay(10);
-    intake_half_motor.move(0);
-    pros::delay(10);
-    chassis.turnToHeading(-20, 1000);
-    pros::delay(10);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(-8, -27, 2000); // move to rings
-    hold = true;
-    pros::Task holdRing_task(holdRing);
-    pros::delay(1500);
-    hold = false;
-    intake_motor.move(0);
-    pros::delay(10);
-    intake_half_motor.move(0);
-    pros::delay(10);
-    doinker_piston.retract();
-    pros::delay(100);
-    chassis.turnToHeading(-105, 1000, {.direction = AngularDirection::CW_CLOCKWISE}); //,
-    pros::delay(500);
-    chassis.moveToPoint(18, -25, 2000, {.forwards = false, .maxSpeed = 40}, true); // go to mogo 2
-    pros::delay(1400);
-    doinker_piston.extend(); // grab mogo 2
-    pros::delay(500);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.turnToHeading(180, 1000);
-    pros::delay(1000);
-    chassis.moveToPoint(14, -42, 2000, {.maxSpeed = 30});
-    pros::delay(2000);
-    */
-
-    // blue side
-    /*
-    chassis.moveToPoint(0, -33, 1000, {.forwards = false}, true); // mid rush
-    pros::delay(500);
-    chassis.turnToHeading(330, 1000);
-    pros::delay(50);
-    chassis.moveToPoint(5.9, -44, 1500, {.forwards = false, .maxSpeed = 25}, true); // go to goal 1 -6.2 -45
-    pros::delay(1300);
-    doinker_piston.extend(); // grab mogo 1
-    pros::delay(500);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(1000);
-    intake_motor.move(0);
-    pros::delay(10);
-    intake_half_motor.move(0);
-    pros::delay(10);
-    chassis.turnToHeading(20, 1000);
-    pros::delay(10);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(8, -27, 2000); // move to rings
-    hold = true;
-    pros::Task holdRing_task(holdRing);
-    pros::delay(1500);
-    hold = false;
-    intake_motor.move(0);
-    pros::delay(10);
-    intake_half_motor.move(0);
-    pros::delay(10);
-    doinker_piston.retract();
-    pros::delay(100);
-    chassis.turnToHeading(105, 1000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE}); //,
-    pros::delay(500);
-    chassis.moveToPoint(-18, -25, 2000, {.forwards = false, .maxSpeed = 40}, true); // go to mogo 2
-    pros::delay(1400);
-    doinker_piston.extend(); // grab mogo 2
-    pros::delay(500);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.turnToHeading(-180, 1000);
-    pros::delay(1000);
-    chassis.moveToPoint(-14, -42, 2000, {.maxSpeed = 30});
-    pros::delay(2000);
-    */
-
-    /*
-    // chassis.moveToPoint(25, -31, 1000);
-    // pros::delay(1500);
-    // chassis.turnToHeading(0, 1000);
-    // pros::delay(1000);
-    // chassis.moveToPoint(23, 0, 1500); //, {.maxSpeed = 80}
-    // pros::delay(1500);
-    // chassis.turnToHeading(45, 500);
-    // pros::delay(500);
-    // intake_motor.move(127);
-    // pros::delay(50);
-    // intake_half_motor.move(127);
-    // pros::delay(50);
-    // chassis.moveToPoint(30, -7, 1000);
-    // pros::delay(1000);
-    // /*solo awp
-    chassis.moveToPoint(0, -33, 1000, {.forwards = false}, true); //mid rush
-    pros::delay(500);
-    chassis.turnToHeading(330, 1000);
-    pros::delay(50);
-    chassis.moveToPoint(6.8, -47, 1000, {.forwards = false, .maxSpeed = 20}, true); //go to goal 1
-    pros::delay(1300);
-    doinker_piston.extend(); //grab mogo 1
-    pros::delay(150);
-    chassis.turnToHeading(20, 1000);
-    pros::delay(100);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(8, -27, 1000); //move to rings
-    pros::delay(2000);
-    intake_motor.move(0);
-    pros::delay(10);
-    intake_half_motor.move(0);
-    pros::delay(10);
-    doinker_piston.retract();
-    pros::delay(100);
-    chassis.turnToHeading(105, 1000); //, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE}
-    pros::delay(500);
-    chassis.moveToPoint(-14, -25, 2000, {.forwards = false, .maxSpeed = 60}, true); //go to mogo 2
-    pros::delay(1500);
-    doinker_piston.extend(); //grab mogo 2
-    pros::delay(100);
-    chassis.moveToPoint(-26, -12, 1000); //go to rings
-    pros::delay(10);
-    intake_motor.move(127);
-    pros::delay(10);
-    intake_half_motor.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(-35, -2, 1000);
-    pros::delay(10);
-    while (true)
-    {
-        if (ring_distance_sensor.get() < 100)
-        {
-            pros::delay(180);
-            intake_motor.move(0);
-            pros::delay(10);
-            intake_half_motor.move(0);
-            pros::delay(300);
-            intake_motor.move(127);
-            pros::delay(10);
-            intake_half_motor.move(127);
-            pros::delay(10);
-            break;
-        }
-    }
-    */
 }
 
 /**
@@ -489,17 +253,7 @@ void ladyBrown()
     bool full = true;
     while (true)
     {
-        // if ((lastPosition + 1) > wall_stake_motor.get_position() && (lastPosition - 1) < wall_stake_motor.get_position() && wallState == 0)
-        // {
-        //     stationary = true;
-        //     wall_stake_motor.move(0);
-        //     pros::delay(50);
-        // }
-
-        // if (wallState == 0 & checkState == 0) {
-        //     wall_stake_motor.move(0);
-        //     pros::delay(20);
-        // }
+ 
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
         {
             if (wallState == 0)
@@ -530,46 +284,22 @@ void ladyBrown()
     }
 }
 
-void ladyBrownCheck()
-{
-    // while (true)
-    // {
-    //     // lastPosition = wall_stake_motor.get_position();
-    //     checkState = wallState;
-    //     pros::delay(1000);
-    // }
-}
 
-void updateController()
-{
-    while (true)
-    {
-        // prints to controller up to 3 rows (this is the max possible)
-        master.clear();
-        pros::delay(100);
-        master.print(0, 0, "check: %d", checkState);
-        pros::delay(100);
-        master.print(1, 0, "wall %d", wallState);
-        pros::delay(100);
-        master.print(2, 0, "current %d", ring_distance_sensor.get());
-        pros::delay(100);
-    }
-}
 
 void opcontrol()
 {
-    pros::Task ladybrownCheck_task(ladyBrownCheck);
-    pros::Task ladybrown_task(ladyBrown);
-    // pros::Task controller_task(updateController);
-    // button guide:
+
+    int x = 0;
+    while (true)
+    {
+        ExampleStruct payload{x};
+        Message msg{"my_topic_name", payload};
+        std::cout << static_cast<json>(msg) << std::flush;
+
+        pros::delay(10);
+        x++;
+    }
     /*
-    joysticks: drivetrain
-    L2: doinker
-    L1: goal clamp
-    R2: home position lady brown
-    R1: move lady brown
-    */
-    // loop forever
     while (true)
     {
         // get left y and right x positions
@@ -645,8 +375,9 @@ void opcontrol()
         intake_motor.move(intakePower);
         intake_half_motor.move(intakePower);
 
-        pros::delay(25);
+        pros::delay(20);
     }
+    */
 }
 
 /*
