@@ -14,12 +14,24 @@ inline void to_json(json &j, const Message &msg)
   j = json{{"topic", msg.topic}, {"payload", msg.payload}};
 }
 
-struct ExampleStruct
+struct Odometry
 {
-  int x;
+  double x;
+  double y;
+  double theta;
 };
 
-inline void to_json(json &j, const ExampleStruct &msg)
+inline void to_json(json &j, const Odometry& msg)
 {
-  j = json{{"x", msg.x}};
+  j = json{{"x", msg.x}, {"y", msg.y}, {"theta", msg.theta}};
 }
+
+// struct ExampleStruct
+// {
+//   int x;
+// };
+
+// inline void to_json(json &j, const ExampleStruct &msg)
+// {
+//   j = json{{"x", msg.x}};
+// }

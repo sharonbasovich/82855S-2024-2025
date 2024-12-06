@@ -7,13 +7,13 @@
 // #include <sys/_intsup.h>
 #include "config.h"
 
-bool intake = 0;
-bool outake = 0;
+// bool intake = 0;
+// bool outake = 0;
 
-bool clamp = 0;
+// bool clamp = 0;
 
-bool doinkPosition = 0;
-bool doinker = 0;
+// bool doinkPosition = 0;
+// bool doinker = 0;
 
 bool teamColour = 0; // 0 for red
 
@@ -103,22 +103,11 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize()
+
+void updateScreen()
 {
-    pros::lcd::initialize(); // initialize brain screen
-    chassis.calibrate();     // calibrate sensors
-
-    std::cout << "foxglove" << std::endl; //flag to indicate new session
-
-    pros::Task controller_task(updateController); //prints to controller, comment out to get back default ui
-    updateScreen(); //prints to brain screen
-}
-
-pros::Task screen_task;
-
-void updateScreen() {
-    screen_task = pros::Task([]()
-                             {
+    pros::Task screen_task([]()
+                           {
                                  while (true)
                                  {
                                     //up to 8 lines (0-7)
@@ -126,7 +115,10 @@ void updateScreen() {
                                     //use %f for floating point
                                     //if the wrong one is used could have 0 or huge random output
                                     //  pros::lcd::print(<0-7>, "var: <%d or %f>", <valueToPrint>);
-                                     pros::delay(20);
+                                    pros::lcd::print(0, "x: %f", 5.0);
+                                    pros::lcd::print(1, "y: %f", chassis.getPose().y);
+                                    pros::lcd::print(2, "theta: %f", chassis.getPose().theta);
+                                    pros::delay(20);
                                  } });
 }
 
@@ -143,23 +135,39 @@ void updateController()
         // if the wrong one is used could have 0 or huge random output
         master.print(0, 0, "check: %d", checkState);
         master.print(1, 0, "wall %d", wallState);
-        master.print(2, 0, "current %d", ring_distance_sensor.get());
+        master.print(2, 0, "current %d", ring_distance.get());
 
         pros::delay(50);
     }
 }
+
+
+void initialize()
+{
+    pros::lcd::initialize(); // initialize brain screen
+    chassis.calibrate();     // calibrate sensors
+
+    std::cout << "foxglove" << std::endl; // flag to indicate new session
+
+    pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
+    // updateScreen();                               // prints to brain screen
+    pros::Task screen_task([&]()
+                           {
+        while (true) {
+            // print robot location to the brain screen
+            pros::lcd::print(0, "X: %f", x); // x
+            pros::lcd::print(1, "Y: %f", b); // y
+            pros::lcd::print(2, "Theta: %f", c); // heading
+            // delay to save resources
+            pros::delay(20);
+        } });
+}
+
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void getCurrentHeading()
-{
-    while (true)
-    {
-        pros::lcd::print(5, "%f", fmod(imu.get_rotation(), 360.0));
-    }
-}
 
 void disabled() {}
 
@@ -192,11 +200,11 @@ void holdRing()
 {
     while (hold)
     {
-        if (ring_distance_sensor.get() < 100)
+        if (ring_distance.get() < 100)
         {
-            intake_motor.move(0);
+            intake_right.move(0);
             pros::delay(10);
-            intake_half_motor.move(0);
+            intake_left.move(0);
             pros::delay(10);
             break;
         }
@@ -205,32 +213,30 @@ void holdRing()
 
 void intakeForward()
 {
-    intake_motor.move(127);
-    pros::delay(20);
-    intake_half_motor.move(127);
-    pros::delay(20);
+    intake_left.move(127);
+    pros::delay(10);
+    intake_right.move(127);
+    pros::delay(10);
 }
 
 void intakeBackward()
 {
-    intake_motor.move(-127);
-    pros::delay(20);
-    intake_half_motor.move(-127);
-    pros::delay(20);
+    intake_left.move(-127);
+    pros::delay(10);
+    intake_right.move(-127);
+    pros::delay(10);
 }
 
 void intakeStop()
 {
-    intake_motor.move(0);
-    pros::delay(20);
-    intake_half_motor.move(0);
-    pros::delay(20);
+    intake_left.move(0);
+    pros::delay(10);
+    intake_right.move(0);
+    pros::delay(10);
 }
 
 void autonomous()
 {
-
-
 }
 
 /**
@@ -247,58 +253,75 @@ void autonomous()
  * task, not resume it from where it left off.
  */
 
-void ladyBrown()
-{
+// void ladyBrown()
+// {
 
-    bool full = true;
-    while (true)
-    {
- 
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
-        {
-            if (wallState == 0)
-            {
-                wall_stake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-                wall_stake_motor.move(30);
-                pros::delay(225);
-                wall_stake_motor.move(0);
-                wallState += 1;
-            }
-            else if (wallState == 1)
-            {
+//     bool full = true;
+//     while (true)
+//     {
 
-                wall_stake_motor.move(127);
+//         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+//         {
+//             if (wallState == 0)
+//             {
+//                 wall_stake_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+//                 wall_stake_motor.move(30);
+//                 pros::delay(225);
+//                 wall_stake_motor.move(0);
+//                 wallState += 1;
+//             }
+//             else if (wallState == 1)
+//             {
 
-                wallState += 1;
-            }
-            else if (wallState == 2)
-            {
-                wall_stake_motor.move(-127);
-                wallState = 0;
-                pros::delay(1500);
-                wall_stake_motor.move(0);
-            }
-        }
+//                 wall_stake_motor.move(127);
 
-        pros::delay(25);
-    }
-}
+//                 wallState += 1;
+//             }
+//             else if (wallState == 2)
+//             {
+//                 wall_stake_motor.move(-127);
+//                 wallState = 0;
+//                 pros::delay(1500);
+//                 wall_stake_motor.move(0);
+//             }
+//         }
 
+//         pros::delay(25);
+//     }
+// }
 
+float a = 0;
+float b = 0;
+float c = 0;
+int x = 0;
 
 void opcontrol()
 {
-
-    int x = 0;
     while (true)
     {
-        ExampleStruct payload{x};
-        Message msg{"my_topic_name", payload};
-        std::cout << static_cast<json>(msg) << std::flush;
+        // lemlib::Pose pose = chassis.getPose();
+        // Odometry odom = {std::ceil((double)pose.x * 100.0) / 100.0, std::ceil((double)pose.y * 100.0) / 100.0, std::ceil((double)pose.theta * 100.0) / 100.0};
+        Odometry odom = {std::ceil((double)a * 100.0) / 100.0, std::ceil((double)b * 100.0) / 100.0, std::ceil((double)0 * 100.0) / 100.0};
 
-        pros::delay(10);
-        x++;
+        Message msg{"odometry", odom};
+        std::cout << static_cast<json>(msg) << std::flush;
+        pros::delay(50);
+        a++;
+        b++;
+        c++;
     }
+
+    
+    // while (true)
+    // {
+    //     ExampleStruct payload{x};
+    //     Message msg{"my_topic_name", payload};
+    //     std::cout << static_cast<json>(msg) << std::flush;
+
+    //     pros::delay(50);
+    //     x++;
+    // }
+
     /*
     while (true)
     {
@@ -314,11 +337,11 @@ void opcontrol()
 
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            intake_motor.move(-50);
-            intake_half_motor.move(-50);
+            intake_left.move(-50);
+            intake_right.move(-50);
             pros::delay(50);
-            intake_motor.move(0);
-            intake_half_motor.move(0);
+            intake_left.move(0);
+            intake_right.move(0);
         }
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
         {
@@ -346,12 +369,6 @@ void opcontrol()
         {
         }
 
-        // // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-        // // {
-
-        //     intakeSlowdown = !intakeSlowdown;
-        //
-
         if (doinker)
         {
             doinker_piston.extend();
@@ -372,8 +389,8 @@ void opcontrol()
 
         int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
         intakePower = intakePower * 127 / (1 + 5 * intakeSlowdown);
-        intake_motor.move(intakePower);
-        intake_half_motor.move(intakePower);
+        intake_left.move(intakePower);
+        intake_right.move(intakePower);
 
         pros::delay(20);
     }

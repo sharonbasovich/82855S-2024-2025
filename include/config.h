@@ -5,64 +5,61 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
-#define LEFT_FRONT_MOTOR_PORT -3
-#define LEFT_MIDDLE_MOTOR_PORT -2
-#define LEFT_BACK_MOTOR_PORT -1
-#define RIGHT_FRONT_MOTOR_PORT 8
-#define RIGHT_MIDDLE_MOTOR_PORT 9
-#define RIGHT_BACK_MOTOR_PORT 10
+//drive motors
+#define LEFT_FRONT_DRIVE -3
+#define LEFT_MIDDLE_DRIVE -2
+#define LEFT_BACK_DRIVE -1
+
+#define RIGHT_FRONT_DRIVE 8
+#define RIGHT_MIDDLE_DRIVE 9
+#define RIGHT_BACK_DRIVE 10
+
+//drive config
 #define DRIVE_GEARSET pros::E_MOTOR_GEARSET_06
 #define WHEEL_DIAMETER 3.25
 #define DRIVE_RPM 450
 
-#define INTAKE_MOTOR -6 //-6
-#define INTAKE_HALF_MOTOR -7
+//intake motors
+#define INTAKE_LEFT -6
+#define INTAKE_RIGHT -7
 
-#define DOINKER_PORT 'G'
-#define CLAMP_PORT 'H'
+//pneumatics
+#define DOINKER 'G'
+#define CLAMP 'H'
 
-#define WALL_STAKE_ROTATION_PORT 20
-
-//#define LOAD_ANGLE 20
-//#define SCORE_ANGLE 140
-
+//sensors
+#define WALL_ROTATION 20
 #define IMU 19
-#define ODOM_VERTICAL -12
-#define ODOM_HORIZONTAL 18
-
-#define RING_DISTANCE_SENSOR 5
-
-
+#define VERTICAL_ODOM -12
+#define HORIZONTAL_ODOM 18
+#define RING_DISTANCE 5
 
 
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
 
-inline pros::Motor left_front_motor(LEFT_FRONT_MOTOR_PORT);
-inline pros::Motor left_middle_motor(LEFT_MIDDLE_MOTOR_PORT);
-inline pros::Motor left_back_motor(LEFT_BACK_MOTOR_PORT);
-inline pros::Motor right_front_motor(RIGHT_FRONT_MOTOR_PORT);
-inline pros::Motor right_middle_motor(RIGHT_MIDDLE_MOTOR_PORT);
-inline pros::Motor right_back_motor(RIGHT_BACK_MOTOR_PORT);
-//inline pros::Motor wall_stake_motor(WALL_STAKE_PORT);
-inline pros::MotorGroup left_mg({LEFT_FRONT_MOTOR_PORT,LEFT_MIDDLE_MOTOR_PORT,LEFT_BACK_MOTOR_PORT},pros::MotorGearset::blue);
-inline pros::MotorGroup right_mg({RIGHT_FRONT_MOTOR_PORT,RIGHT_MIDDLE_MOTOR_PORT, RIGHT_BACK_MOTOR_PORT},pros::MotorGearset::blue);
+inline pros::Motor left_front_drive(LEFT_FRONT_DRIVE);
+inline pros::Motor left_middle_drive(LEFT_MIDDLE_DRIVE);
+inline pros::Motor left_back_drive(LEFT_BACK_DRIVE);
+inline pros::Motor right_front_drive(RIGHT_FRONT_DRIVE);
+inline pros::Motor right_middle_drive(RIGHT_MIDDLE_DRIVE);
+inline pros::Motor right_back_drive(RIGHT_BACK_DRIVE);
 
+inline pros::MotorGroup left_mg({LEFT_FRONT_DRIVE, LEFT_MIDDLE_DRIVE, LEFT_BACK_DRIVE}, pros::MotorGearset::blue);
+inline pros::MotorGroup right_mg({RIGHT_FRONT_DRIVE, RIGHT_MIDDLE_DRIVE, RIGHT_BACK_DRIVE}, pros::MotorGearset::blue);
 
-inline pros::Rotation wall_stake_rotation(WALL_STAKE_ROTATION_PORT);
-inline pros::Motor intake_half_motor(INTAKE_HALF_MOTOR);
+inline pros::Rotation wall_rotation(WALL_ROTATION);
 
-inline pros::Motor intake_motor(INTAKE_MOTOR);
-
-inline pros::Motor wall_stake_motor(20);
+inline pros::Motor intake_right(INTAKE_RIGHT);
+inline pros::Motor intake_left(INTAKE_LEFT);
 
 inline pros::Imu imu(IMU);
 
-inline pros::adi::Pneumatics clamp_piston(CLAMP_PORT, false);
-inline pros::adi::Pneumatics doinker_piston(DOINKER_PORT, false);
+inline pros::adi::Pneumatics clamp(CLAMP, false);
+inline pros::adi::Pneumatics doinker(DOINKER, false);
 
 
-inline pros::Distance ring_distance_sensor(RING_DISTANCE_SENSOR);
+inline pros::Distance ring_distance(RING_DISTANCE);
 
-inline pros::Rotation vertical_odom(ODOM_VERTICAL);
-inline pros::Rotation horizontal_odom(ODOM_HORIZONTAL);
+inline pros::Rotation vertical_odom(VERTICAL_ODOM);
+inline pros::Rotation horizontal_odom(HORIZONTAL_ODOM);
 
