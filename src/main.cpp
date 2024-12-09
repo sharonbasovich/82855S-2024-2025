@@ -104,22 +104,101 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
  * to keep execution time for this mode under a few seconds.
  */
 
-void updateScreen()
+
+void intakeForward()
 {
-    pros::Task screen_task([]()
-                           {
-                                 while (true)
-                                 {
-                                    //up to 8 lines (0-7)
-                                    //use %d for integer and boolean
-                                    //use %f for floating point
-                                    //if the wrong one is used could have 0 or huge random output
-                                    //  pros::lcd::print(<0-7>, "var: <%d or %f>", <valueToPrint>);
-                                    pros::lcd::print(0, "x: %f", 5.0);
-                                    pros::lcd::print(1, "y: %f", chassis.getPose().y);
-                                    pros::lcd::print(2, "theta: %f", chassis.getPose().theta);
-                                    pros::delay(20);
-                                 } });
+    intake_left.move(127);
+    pros::delay(10);
+    intake_right.move(127);
+    pros::delay(10);
+}
+
+void intakeBackward()
+{
+    intake_left.move(-127);
+    pros::delay(10);
+    intake_right.move(-127);
+    pros::delay(10);
+}
+
+void intakeStop()
+{
+    intake_left.move(0);
+    pros::delay(10);
+    intake_right.move(0);
+    pros::delay(10);
+}
+
+bool hold = false;
+bool hasRing = false;
+
+void holdRing()
+{
+    // detects if ring is held or not
+    // hasRing is constantly updated for if a ring is detected or not
+    // set hold to true if intake should stop to hold ring when it is detected or false otherwise
+    while (true)
+    {
+        if (ring_distance.get() < RING_DISTANCE_THRESHOLD)
+        {
+            if (hold)
+            {
+                intakeStop();
+            }
+            hasRing = true;
+        }
+        else
+        {
+            hasRing = false;
+        }
+        pros::delay(10);
+    }
+}
+
+bool isRed = true;
+float hue = -1;
+bool sort = false;
+
+void colorSort() {
+    //set sort to true when you want the ring sort activated, and set it to false when it should stop
+    ring_color.set_led_pwm(100);
+    pros::delay(10);
+    while(true) {
+        hue = ring_color.get_hue();
+        if (sort && isRed * (240) > (hue - 30) && isRed * (240) < (hue + 30) && ring_distance.get() < RING_DISTANCE_THRESHOLD)
+        {
+            pros::delay(COLOR_TIME);
+            intakeBackward();
+            pros::delay(200);
+            intakeForward();
+        }
+        pros::delay(10);
+    }
+    
+}
+
+void foxglove()
+{
+    // float a = 0;
+    // float b = 0;
+    // float c = 0;
+    // int x = 0;
+
+    std::cout << "foxglove" << std::endl; // flag to indicate new session
+    pros::delay(50);
+    while (true)
+    {
+        lemlib::Pose pose = chassis.getPose();
+        Odometry odom = {std::ceil((double)pose.x * 100.0) / 100.0, std::ceil((double)pose.y * 100.0) / 100.0, std::ceil((double)pose.theta * 100.0) / 100.0};
+        // Odometry odom = {std::ceil((double)a * 100.0) / 100.0, std::ceil((double)b * 100.0) / 100.0, std::ceil((double)0 * 100.0) / 100.0};
+
+        Message msg{"odometry", odom};
+        std::cout << static_cast<json>(msg) << std::flush;
+        pros::delay(50);
+        // a++;
+        // b++;
+        // c++;
+    }
 }
 
 void updateController()
@@ -141,13 +220,10 @@ void updateController()
     }
 }
 
-
 void initialize()
 {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate();     // calibrate sensors
-
-    std::cout << "foxglove" << std::endl; // flag to indicate new session
 
     pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     // updateScreen();                               // prints to brain screen
@@ -155,9 +231,9 @@ void initialize()
                            {
         while (true) {
             // print robot location to the brain screen
-            pros::lcd::print(0, "X: %f", x); // x
-            pros::lcd::print(1, "Y: %f", b); // y
-            pros::lcd::print(2, "Theta: %f", c); // heading
+            pros::lcd::print(0, "hue: %f", hue);
+            pros::lcd::print(1, "hasring?: %d", hasRing);
+            pros::lcd::print(2, "Theta: %d", 8); // heading
             // delay to save resources
             pros::delay(20);
         } });
@@ -193,47 +269,6 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-
-bool hold = false;
-
-void holdRing()
-{
-    while (hold)
-    {
-        if (ring_distance.get() < 100)
-        {
-            intake_right.move(0);
-            pros::delay(10);
-            intake_left.move(0);
-            pros::delay(10);
-            break;
-        }
-    }
-}
-
-void intakeForward()
-{
-    intake_left.move(127);
-    pros::delay(10);
-    intake_right.move(127);
-    pros::delay(10);
-}
-
-void intakeBackward()
-{
-    intake_left.move(-127);
-    pros::delay(10);
-    intake_right.move(-127);
-    pros::delay(10);
-}
-
-void intakeStop()
-{
-    intake_left.move(0);
-    pros::delay(10);
-    intake_right.move(0);
-    pros::delay(10);
-}
 
 void autonomous()
 {
@@ -290,28 +325,15 @@ void autonomous()
 //     }
 // }
 
-float a = 0;
-float b = 0;
-float c = 0;
-int x = 0;
-
 void opcontrol()
 {
-    while (true)
-    {
-        // lemlib::Pose pose = chassis.getPose();
-        // Odometry odom = {std::ceil((double)pose.x * 100.0) / 100.0, std::ceil((double)pose.y * 100.0) / 100.0, std::ceil((double)pose.theta * 100.0) / 100.0};
-        Odometry odom = {std::ceil((double)a * 100.0) / 100.0, std::ceil((double)b * 100.0) / 100.0, std::ceil((double)0 * 100.0) / 100.0};
+    // pros::Task foxglove_task(foxglove);
 
-        Message msg{"odometry", odom};
-        std::cout << static_cast<json>(msg) << std::flush;
-        pros::delay(50);
-        a++;
-        b++;
-        c++;
-    }
+    // pros::Task holdring_trak(holdRing);
 
-    
+    pros::Task colorsort_task(colorSort);
+
+    sort = true;
     // while (true)
     // {
     //     ExampleStruct payload{x};

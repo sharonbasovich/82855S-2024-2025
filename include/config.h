@@ -32,9 +32,16 @@
 #define IMU 19
 #define VERTICAL_ODOM -12
 #define HORIZONTAL_ODOM 18
+
+//ring hold
 #define RING_DISTANCE 5
+//**IN MILLIMETERS** the value that the ring must be closer than to be detected
+#define RING_DISTANCE_THRESHOLD 100
 
-
+//color sort
+#define RING_COLOR 6
+//*IN MILLISECONDS* the time that it takes for the ring to reach the top of the hooks from when the color sensor detects it*/
+#define COLOR_TIME 400
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 inline pros::Motor left_front_drive(LEFT_FRONT_DRIVE);
@@ -59,6 +66,7 @@ inline pros::adi::Pneumatics doinker(DOINKER, false);
 
 
 inline pros::Distance ring_distance(RING_DISTANCE);
+inline pros::Optical ring_color(RING_COLOR);
 
 inline pros::Rotation vertical_odom(VERTICAL_ODOM);
 inline pros::Rotation horizontal_odom(HORIZONTAL_ODOM);
