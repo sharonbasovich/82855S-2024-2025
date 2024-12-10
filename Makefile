@@ -16,6 +16,13 @@ WARNFLAGS+=
 EXTRA_CFLAGS=
 EXTRA_CXXFLAGS=
 
+# Add LVGL include path
+CXXFLAGS += -I$(INCDIR)/liblvgl
+CFLAGS += -I$(INCDIR)/liblvgl
+
+# Link LVGL library
+LDFLAGS += $(FWDIR)/liblvgl.a
+
 # Set to 1 to enable hot/cold linking
 USE_PACKAGE:=1
 

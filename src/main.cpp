@@ -6,19 +6,103 @@
 #include <iostream>
 // #include <sys/_intsup.h>
 #include "config.h"
+#include "liblvgl/lvgl.h"
+#include "selector.hpp"
 
-// bool intake = 0;
-// bool outake = 0;
+// Structure to hold button label and color information
+typedef struct
+{
+    const char *label; // Button name
+    bool is_red;       // Flag to determine button color (true for red, false for blue)
+} button_info_t;
 
-// bool clamp = 0;
+// Array of button labels and their colors
+// True makes the button red, and false makes it blue
+button_info_t button_info[] = {
+    {PN1, PC1},
+    {PN2, PC2},
+    {PN3, PC3},
+    {PN4, PC4},
+    {PN5, PC5},
+    {PN6, PC6}};
 
-// bool doinkPosition = 0;
-// bool doinker = 0;
+// the number of buttons to be created based on the array above
+#define NUM_BUTTONS (sizeof(button_info) / sizeof(button_info[0]))
+
+static lv_obj_t *readout_label;
+
+// The brain screen is 480 by 272 pixels
+// Size of the button
+int button_x = BUTTON_X;
+int button_y = BUTTON_Y;
+
+lv_coord_t x_start = X_START;            // Starting x-coordinate for buttons
+lv_coord_t y_start = Y_START;            // Starting y-coordinate for buttons
+lv_coord_t x_offset = button_x + OFFSET; // Horizontal offset between buttons
+lv_coord_t y_offset = button_y + OFFSET; // Vertical offset between buttons
+lv_coord_t num_columns = NUM_COLUMNS;    // Number of columns in the grid
+
+// Button color definitions
+#define BLUE_COLOR lv_color_hex(0x0000FF)
+#define RED_COLOR lv_color_hex(0xFF0000)
+lv_style_t blue_style;
+lv_style_t red_style;
+
+// Callback function for button events
+static void btn_event_cb(lv_event_t *e)
+{
+    // Check if the button was pressed
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED)
+    {
+        // Retrieve the value associated with the button
+        int value = (intptr_t)lv_obj_get_user_data(lv_event_get_target(e));
+
+        // Determine the color of the button from the array
+        const char *color = button_info[value - 1].is_red ? "Red" : "Blue";
+
+        // Update the readout with the new value and color
+        lv_label_set_text_fmt(readout_label, "Auto: %s     Color: %s", button_info[value - 1].label, color);
+    }
+}
+
+// Function to abstract the creation of the button
+lv_obj_t *create_button(lv_obj_t *parent, const char *text, lv_coord_t x, lv_coord_t y, int value, bool is_red)
+{
+    lv_obj_t *btn = lv_btn_create(parent);      // Create the button
+    lv_obj_set_size(btn, button_x, button_y);   // Set button size
+    lv_obj_align(btn, LV_ALIGN_TOP_LEFT, x, y); // Position the button
+
+    // Create a label for the button text
+    lv_obj_t *label = lv_label_create(btn);
+    lv_label_set_text(label, text);
+
+    // Set the label alignment to left
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_LEFT, 0);
+    // Remove any padding on the left of the button to optimize space
+    lv_obj_set_style_pad_left(btn, 3, 0);
+
+    // Set the button color based on the `is_red` flag from the array
+    if (is_red)
+    {
+        lv_obj_add_style(btn, &red_style, 0);
+    }
+    else
+    {
+        lv_obj_add_style(btn, &blue_style, 0);
+    }
+
+    // Set the value of the button
+    lv_obj_set_user_data(btn, (void *)(intptr_t)value);
+
+    // Attach the event callback
+    lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_CLICKED, NULL);
+    return btn;
+}
 
 bool teamColour = 0; // 0 for red
 
 // Ladybrown
-
 int wallState = 0;
 int checkState = -1;
 int wallStakeAngle = 0;
@@ -97,12 +181,6 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                                             // &throttle_curve, &steer_curve
 );
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
 
 
 void intakeForward()
@@ -159,11 +237,13 @@ bool isRed = true;
 float hue = -1;
 bool sort = false;
 
-void colorSort() {
-    //set sort to true when you want the ring sort activated, and set it to false when it should stop
+void colorSort()
+{
+    // set sort to true when you want the ring sort activated, and set it to false when it should stop
     ring_color.set_led_pwm(100);
     pros::delay(10);
-    while(true) {
+    while (true)
+    {
         hue = ring_color.get_hue();
         if (sort && isRed * (240) > (hue - 30) && isRed * (240) < (hue + 30) && ring_distance.get() < RING_DISTANCE_THRESHOLD)
         {
@@ -174,7 +254,6 @@ void colorSort() {
         }
         pros::delay(10);
     }
-    
 }
 
 void foxglove()
@@ -220,13 +299,68 @@ void updateController()
     }
 }
 
+/**
+ * Runs initialization code. This occurs as soon as the program is started.
+ *
+ * All other competition modes are blocked by initialize; it is recommended
+ * to keep execution time for this mode under a few seconds.
+ */
+
 void initialize()
 {
-    pros::lcd::initialize(); // initialize brain screen
+    // Initialize button styles for blue
+    lv_style_init(&blue_style);
+    lv_style_set_bg_color(&blue_style, BLUE_COLOR);
+
+    // Initialize button styles for red
+    lv_style_init(&red_style);
+    lv_style_set_bg_color(&red_style, RED_COLOR);
+
+    // Create the readout that displays which program is selected
+    readout_label = lv_label_create(lv_scr_act());
+
+    // Indicate that no program has been selected yet
+    lv_label_set_text(readout_label, "Auto: NONE");
+
+    // Position the readout
+    lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
+
+    // Create buttons in a grid pattern
+    int button_count = 0;
+    for (int row = 0; row < 5; row++)
+    {
+        for (int col = 0; col < num_columns; col++)
+        {
+            // Stop if all the buttons are created
+            if (button_count >= NUM_BUTTONS)
+            {
+                break;
+            }
+
+            lv_coord_t x = x_start + col * x_offset; // Calculate x position
+            lv_coord_t y = y_start + row * y_offset; // Calculate y position
+
+            // Get label text and color info from the 2D array
+            const char *label_text = button_info[button_count].label;
+            bool is_red = button_info[button_count].is_red;
+            int button_value = (button_count + 1);
+
+            // Use the previously created button creator with the values for the current button
+            create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
+
+            // Track the number of buttons created
+            button_count++;
+        }
+    }
+    
     chassis.calibrate();     // calibrate sensors
 
     pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     // updateScreen();                               // prints to brain screen
+    
+    //cannot use if using auton selector
+    /*
+    pros::lcd::initialize(); // initialize brain screen
     pros::Task screen_task([&]()
                            {
         while (true) {
@@ -237,6 +371,7 @@ void initialize()
             // delay to save resources
             pros::delay(20);
         } });
+    */
 }
 
 /**
@@ -327,6 +462,7 @@ void autonomous()
 
 void opcontrol()
 {
+    lv_timer_handler(); // Process LVGL tasks
     // pros::Task foxglove_task(foxglove);
 
     // pros::Task holdring_trak(holdRing);
