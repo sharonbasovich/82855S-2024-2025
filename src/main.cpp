@@ -9,6 +9,8 @@
 #include "liblvgl/lvgl.h"
 #include "selector.hpp"
 
+double target = 0;
+double toutput = 0;
 // Structure to hold button label and color information
 typedef struct
 {
@@ -181,29 +183,27 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                                             // &throttle_curve, &steer_curve
 );
 
-
-
 void intakeForward()
 {
-    intake_left.move(127);
+    intake_preroller.move(127);
     pros::delay(10);
-    intake_right.move(127);
+    intake_hooks.move(127);
     pros::delay(10);
 }
 
 void intakeBackward()
 {
-    intake_left.move(-127);
+    intake_preroller.move(-127);
     pros::delay(10);
-    intake_right.move(-127);
+    intake_hooks.move(-127);
     pros::delay(10);
 }
 
 void intakeStop()
 {
-    intake_left.move(0);
+    intake_preroller.move(0);
     pros::delay(10);
-    intake_right.move(0);
+    intake_hooks.move(0);
     pros::delay(10);
 }
 
@@ -280,6 +280,28 @@ void foxglove()
     }
 }
 
+double wallAngle = 0;
+double delta = 0;
+
+
+void wallAngleTrack()
+{
+    double lastAngle;
+
+    while (true)
+    {
+        lastAngle = wall_rotation.get_angle();
+        pros::delay(100);
+        delta = wall_rotation.get_angle() - lastAngle;
+        if (abs(delta) > 20000)
+        {
+            delta = 0;
+        }
+        
+        wallAngle += delta;
+    }
+}
+
 void updateController()
 {
     while (true)
@@ -291,11 +313,63 @@ void updateController()
         // use %d for integer and boolean
         // use %f for floating point
         // if the wrong one is used could have 0 or huge random output
-        master.print(0, 0, "check: %d", checkState);
-        master.print(1, 0, "wall %d", wallState);
-        master.print(2, 0, "current %d", ring_distance.get());
+        master.print(0, 0, "target: %f", delta);
+        master.print(1, 0, "angle: %f", wall_rotation.get_position());
+        master.print(2, 0, "toutput: %f", wallAngle);
 
         pros::delay(50);
+    }
+}
+
+void wallStake(int state)
+{
+    double bottom = 220;
+    double load = 50;
+    double score = 280;
+
+    switch (state)
+    {
+    case 0:
+        target = bottom;
+        break;
+    case 1:
+        target = load;
+        break;
+    case 2:
+        target = score;
+        break;
+
+    default:
+        target = bottom;
+        break;
+    }
+}
+
+// test
+void TurnPid()
+{
+    const double tkP = 1.0;
+    const double tkI = 0;    // 00004;//lower the more perscise
+    const double tkD = 0.78; // 4larger the stronger the the kD is so response is quicker
+
+    double terror = 0;
+    double tprevious_error = 0;
+    double tintegral = 0;
+    double tderivative = 0;
+
+    while (true)
+    {
+        double currentHeading = wall_rotation.get_angle() / 100;
+        terror = target - currentHeading;
+        tintegral += terror;
+        tderivative = terror - tprevious_error;
+        toutput = tkP * terror + tkI * tintegral + tkD * tderivative;
+        wall_motor.move(toutput);
+        // wall_motor.move(-toutput);
+        tprevious_error = terror;
+        pros::delay(20);
+
+        // PID Control Loop
     }
 }
 
@@ -308,70 +382,76 @@ void updateController()
 
 void initialize()
 {
-    // Initialize button styles for blue
-    lv_style_init(&blue_style);
-    lv_style_set_bg_color(&blue_style, BLUE_COLOR);
+    pros::delay(10);
+    wall_rotation.reset();
+    pros::delay(10);
+    wall_rotation.reset_position();
+    pros::delay(10);
+    // // Initialize button styles for blue
+    // lv_style_init(&blue_style);
+    // lv_style_set_bg_color(&blue_style, BLUE_COLOR);
 
-    // Initialize button styles for red
-    lv_style_init(&red_style);
-    lv_style_set_bg_color(&red_style, RED_COLOR);
+    // // Initialize button styles for red
+    // lv_style_init(&red_style);
+    // lv_style_set_bg_color(&red_style, RED_COLOR);
 
-    // Create the readout that displays which program is selected
-    readout_label = lv_label_create(lv_scr_act());
+    // // Create the readout that displays which program is selected
+    // readout_label = lv_label_create(lv_scr_act());
 
-    // Indicate that no program has been selected yet
-    lv_label_set_text(readout_label, "Auto: NONE");
+    // // Indicate that no program has been selected yet
+    // lv_label_set_text(readout_label, "Auto: NONE");
 
-    // Position the readout
-    lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
+    // // Position the readout
+    // lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
 
-    // Create buttons in a grid pattern
-    int button_count = 0;
-    for (int row = 0; row < 5; row++)
-    {
-        for (int col = 0; col < num_columns; col++)
-        {
-            // Stop if all the buttons are created
-            if (button_count >= NUM_BUTTONS)
-            {
-                break;
-            }
+    // // Create buttons in a grid pattern
+    // int button_count = 0;
+    // for (int row = 0; row < 5; row++)
+    // {
+    //     for (int col = 0; col < num_columns; col++)
+    //     {
+    //         // Stop if all the buttons are created
+    //         if (button_count >= NUM_BUTTONS)
+    //         {
+    //             break;
+    //         }
 
-            lv_coord_t x = x_start + col * x_offset; // Calculate x position
-            lv_coord_t y = y_start + row * y_offset; // Calculate y position
+    //         lv_coord_t x = x_start + col * x_offset; // Calculate x position
+    //         lv_coord_t y = y_start + row * y_offset; // Calculate y position
 
-            // Get label text and color info from the 2D array
-            const char *label_text = button_info[button_count].label;
-            bool is_red = button_info[button_count].is_red;
-            int button_value = (button_count + 1);
+    //         // Get label text and color info from the 2D array
+    //         const char *label_text = button_info[button_count].label;
+    //         bool is_red = button_info[button_count].is_red;
+    //         int button_value = (button_count + 1);
 
-            // Use the previously created button creator with the values for the current button
-            create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
+    //         // Use the previously created button creator with the values for the current button
+    //         create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
 
-            // Track the number of buttons created
-            button_count++;
-        }
-    }
-    
-    chassis.calibrate();     // calibrate sensors
+    //         // Track the number of buttons created
+    //         button_count++;
+    //     }
+    // }
 
-    pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
+    chassis.calibrate(); // calibrate sensors
+
+    // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     // updateScreen();                               // prints to brain screen
-    
-    //cannot use if using auton selector
-    /*
+    bool xPos;
+    bool yPos;
+    bool theta;
+    // cannot use if using auton selector
+
     pros::lcd::initialize(); // initialize brain screen
     pros::Task screen_task([&]()
                            {
         while (true) {
             // print robot location to the brain screen
-            pros::lcd::print(0, "hue: %f", hue);
-            pros::lcd::print(1, "hasring?: %d", hasRing);
-            pros::lcd::print(2, "Theta: %d", 8); // heading
+            pros::lcd::print(0, "target: %f", delta);
+            pros::lcd::print(1, "wall rotation: %d", wall_rotation.get_angle());
+            pros::lcd::print(2, "toutput: %f", wallAngle); // heading
             // delay to save resources
             pros::delay(20);
         } });
-    */
 }
 
 /**
@@ -460,16 +540,26 @@ void autonomous()
 //     }
 // }
 
+bool intake = false;
+bool outake = false;
+
 void opcontrol()
 {
-    lv_timer_handler(); // Process LVGL tasks
+    pros::delay(10);
+    pros::Task wallangle_task(wallAngleTrack);
+    pros::delay(10);
+    pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
+    pros::delay(10);
+    // lv_timer_handler(); // Process LVGL tasks
     // pros::Task foxglove_task(foxglove);
 
     // pros::Task holdring_trak(holdRing);
 
-    pros::Task colorsort_task(colorSort);
-
-    sort = true;
+    // pros::Task colorsort_task(colorSort);
+    pros::delay(10);
+    pros::Task turnpid_task(TurnPid);
+    pros::delay(10);
+    // sort = true;
     // while (true)
     // {
     //     ExampleStruct payload{x};
@@ -480,79 +570,96 @@ void opcontrol()
     //     x++;
     // }
 
-    /*
     while (true)
     {
         // get left y and right x positions
 
-        int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        // int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        // int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        // move the robot
-        chassis.arcade((leftY), rightX);
+        // // move the robot
+        // chassis.arcade((leftY), rightX);
 
         // buttons
 
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-        {
-            intake_left.move(-50);
-            intake_right.move(-50);
-            pros::delay(50);
-            intake_left.move(0);
-            intake_right.move(0);
-        }
+        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+        // {
+        //     intake_left.move(-50);
+        //     intake_right.move(-50);
+        //     pros::delay(50);
+        //     intake_left.move(0);
+        //     intake_right.move(0);
+        // }
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
         {
             intake = !intake;
             outake = 0;
+            if (intake)
+            {
+                intakeForward();
+            }
+            else
+            {
+                intakeStop();
+            }
         } // activate intake
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
         {
             outake = !outake;
             intake = 0;
+            if (outake)
+            {
+                intakeBackward();
+            }
+            else
+            {
+                intakeStop();
+            }
+
         } // activate outake
 
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
         {
-
-            clamp = !clamp;
+            wallStake(0);
         }
-
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
-        {
-            doinker = !doinker;
-        }
-
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         {
+            wallStake(2);
         }
+        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+        // {
 
-        if (doinker)
-        {
-            doinker_piston.extend();
-        }
-        else
-        {
-            doinker_piston.retract();
-        }
+        //     clamp = !clamp;
+        // }
 
-        if (clamp)
-        {
-            clamp_piston.extend();
-        }
-        else
-        {
-            clamp_piston.retract();
-        }
+        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+        // {
+        //     doinker = !doinker;
+        // }
 
-        int intakePower = intake - outake; // this should return 1 for forwards, -1 for backwards
-        intakePower = intakePower * 127 / (1 + 5 * intakeSlowdown);
-        intake_left.move(intakePower);
-        intake_right.move(intakePower);
+        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+        // {
+        // }
 
+        // if (doinker)
+        // {
+        //     doinker_piston.extend();
+        // }
+        // else
+        // {
+        //     doinker_piston.retract();
+        // }
+
+        // if (clamp)
+        // {
+        //     clamp_piston.extend();
+        // }
+        // else
+        // {
+        //     clamp_piston.retract();
+        // }
         pros::delay(20);
     }
-    */
 }
 
 /*
