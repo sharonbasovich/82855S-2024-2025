@@ -291,9 +291,9 @@ void wallAngleTrack()
     while (true)
     {
         lastAngle = wall_rotation.get_angle();
-        pros::delay(100);
-        delta = wall_rotation.get_angle() - lastAngle;
-        if (abs(delta) > 20000)
+        pros::delay(10);
+        delta = (wall_rotation.get_angle() - lastAngle)/300;
+        if (abs(delta) > 7)
         {
             delta = 0;
         }
@@ -302,53 +302,75 @@ void wallAngleTrack()
     }
 }
 
-void updateController()
-{
-    while (true)
-    {
-        // prints to controller up to 3 rows (this is the max possible)
-        master.clear();
+// void updateController()
+// {
+//     while (true)
+//     {
+//         // prints to controller up to 3 rows (this is the max possible)
+//         master.clear();
 
-        // up to 3 lines (0-2)
-        // use %d for integer and boolean
-        // use %f for floating point
-        // if the wrong one is used could have 0 or huge random output
-        master.print(0, 0, "target: %f", delta);
-        master.print(1, 0, "angle: %f", wall_rotation.get_position());
-        master.print(2, 0, "toutput: %f", wallAngle);
+//         // up to 3 lines (0-2)
+//         // use %d for integer and boolean
+//         // use %f for floating point
+//         // if the wrong one is used could have 0 or huge random output
+//         master.print(0, 0, "target: %d", loadToggle);
+//         master.print(1, 0, "angle: %f", wall_rotation.get_position());
+//         master.print(2, 0, "toutput: %f", wallAngle);
 
-        pros::delay(50);
-    }
-}
+//         pros::delay(50);
+//     }
+// }
+
+
 
 void wallStake(int state)
 {
-    double bottom = 220;
-    double load = 50;
-    double score = 280;
+    // double bottom = 0;
+    // double load = -18;
+    // double score = -120;
 
-    switch (state)
-    {
-    case 0:
-        target = bottom;
-        break;
-    case 1:
-        target = load;
-        break;
-    case 2:
-        target = score;
-        break;
+    // switch (state)
+    // {
+    // case 0:
+    //     target = bottom;
+    //     break;
+    // case 1:
+    //     target = load;
+    //     break;
+    // case 2:
+    //     target = score;
+    //     break;
 
-    default:
-        target = bottom;
-        break;
+    // default:
+    //     target = bottom;
+    //     break;
+    // }
+    
+    if (state == 1) {
+        wall_motor.move(127);
+        pros::delay(180);
+        wall_motor.brake();
     }
+    if (state == 0)
+    {
+        wall_motor.move(-127);
+        pros::delay(2000);
+        wall_motor.move(0);
+    }
+    
+    if (state == 2)
+    {
+        wall_motor.move(127);
+        pros::delay(2000);
+        wall_motor.move(0);
+    }
+    
 }
 
 // test
 void TurnPid()
 {
-    const double tkP = 1.0;
+    const double tkP = 3;
     const double tkI = 0;    // 00004;//lower the more perscise
     const double tkD = 0.78; // 4larger the stronger the the kD is so response is quicker
 
@@ -359,8 +381,8 @@ void TurnPid()
 
     while (true)
     {
-        double currentHeading = wall_rotation.get_angle() / 100;
-        terror = target - currentHeading;
+        // double currentHeading = wall_rotation.get_angle() / 100;
+        terror = target - wallAngle;
         tintegral += terror;
         tderivative = terror - tprevious_error;
         toutput = tkP * terror + tkI * tintegral + tkD * tderivative;
@@ -382,6 +404,7 @@ void TurnPid()
 
 void initialize()
 {
+    wall_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     pros::delay(10);
     wall_rotation.reset();
     pros::delay(10);
@@ -446,9 +469,9 @@ void initialize()
                            {
         while (true) {
             // print robot location to the brain screen
-            pros::lcd::print(0, "target: %f", delta);
-            pros::lcd::print(1, "wall rotation: %d", wall_rotation.get_angle());
-            pros::lcd::print(2, "toutput: %f", wallAngle); // heading
+            pros::lcd::print(0, "target: %d", loadToggle);
+            pros::lcd::print(1, "toutput: %f", toutput);
+            pros::lcd::print(2, "wallAngle: %f", wallAngle); // heading
             // delay to save resources
             pros::delay(20);
         } });
@@ -542,11 +565,12 @@ void autonomous()
 
 bool intake = false;
 bool outake = false;
+int loadToggle = 0;
 
 void opcontrol()
 {
     pros::delay(10);
-    pros::Task wallangle_task(wallAngleTrack);
+    // pros::Task wallangle_task(wallAngleTrack);
     pros::delay(10);
     pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     pros::delay(10);
@@ -557,7 +581,7 @@ void opcontrol()
 
     // pros::Task colorsort_task(colorSort);
     pros::delay(10);
-    pros::Task turnpid_task(TurnPid);
+    // pros::Task turnpid_task(TurnPid);
     pros::delay(10);
     // sort = true;
     // while (true)
@@ -620,11 +644,26 @@ void opcontrol()
 
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
         {
-            wallStake(0);
+            if (loadToggle == 0 || loadToggle == 2)
+            {
+                loadToggle == 1;
+            } else {
+                loadToggle == 2;
+            }
+            
+            wallStake(2);
         }
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            wallStake(2);
+            //toggle between states 0 and 1
+            if (loadToggle == 1 || loadToggle == 2)
+            {
+                loadToggle = 0;
+            } else {
+                loadToggle == 1;
+            }
+            
+            wallStake(loadToggle);
         }
         // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
         // {

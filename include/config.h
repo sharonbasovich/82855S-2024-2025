@@ -24,14 +24,14 @@
 #define INTAKE_HOOKS -1
 
 // wall stake motors
-#define WALL_MOTOR 10
+#define WALL_MOTOR 2
 
 // pneumatics
 #define DOINKER 'G'
 #define CLAMP 'H'
 
 // sensors
-#define WALL_ROTATION 7
+#define WALL_ROTATION 15
 #define IMU 19
 #define VERTICAL_ODOM -12
 #define HORIZONTAL_ODOM 18
