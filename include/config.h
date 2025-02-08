@@ -6,13 +6,13 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // drive motors
-#define LEFT_FRONT_DRIVE -3
-#define LEFT_MIDDLE_DRIVE -2
-#define LEFT_BACK_DRIVE -1
+#define LEFT_FRONT_DRIVE -21
+#define LEFT_MIDDLE_DRIVE -17
+#define LEFT_BACK_DRIVE -10
 
-#define RIGHT_FRONT_DRIVE 8
-#define RIGHT_MIDDLE_DRIVE 9
-#define RIGHT_BACK_DRIVE 10
+#define RIGHT_FRONT_DRIVE 13
+#define RIGHT_MIDDLE_DRIVE 12
+#define RIGHT_BACK_DRIVE 14
 
 // drive config
 #define DRIVE_GEARSET pros::E_MOTOR_GEARSET_06

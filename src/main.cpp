@@ -9,8 +9,10 @@
 #include "liblvgl/lvgl.h"
 #include "selector.hpp"
 
+int loadToggle = 0;
 double target = 0;
 double toutput = 0;
+bool shouldGo = false;
 // Structure to hold button label and color information
 typedef struct
 {
@@ -283,7 +285,6 @@ void foxglove()
 double wallAngle = 0;
 double delta = 0;
 
-
 void wallAngleTrack()
 {
     double lastAngle;
@@ -292,12 +293,12 @@ void wallAngleTrack()
     {
         lastAngle = wall_rotation.get_angle();
         pros::delay(10);
-        delta = (wall_rotation.get_angle() - lastAngle)/300;
+        delta = (wall_rotation.get_angle() - lastAngle) / 300;
         if (abs(delta) > 7)
         {
             delta = 0;
         }
-        
+
         wallAngle += delta;
     }
 }
@@ -321,10 +322,36 @@ void wallAngleTrack()
 //     }
 // }
 
-
-
-void wallStake(int state)
+void wallStake()
 {
+    while (true)
+    {
+        if (loadToggle == 1 && shouldGo)
+        {
+            shouldGo = false;
+            wall_motor.move(127);
+            pros::delay(180);
+            // wall_motor.move(0);
+            wall_motor.brake();
+        }
+        if (loadToggle == 0 && shouldGo)
+        {
+            shouldGo = false;
+            wall_motor.move(-127);
+            pros::delay(2000);
+            wall_motor.move(0);
+        }
+
+        if (loadToggle == 2 && shouldGo)
+        {
+            shouldGo = false;
+            wall_motor.move(127);
+            pros::delay(2000);
+            wall_motor.move(0);
+        }
+        pros::delay(10);
+    }
+    
     // double bottom = 0;
     // double load = -18;
     // double score = -120;
@@ -345,25 +372,7 @@ void wallStake(int state)
     //     target = bottom;
     //     break;
     // }
-    
-    if (state == 1) {
-        wall_motor.move(127);
-        pros::delay(180);
-        wall_motor.brake();
-    }
-    if (state == 0)
-    {
-        wall_motor.move(-127);
-        pros::delay(2000);
-        wall_motor.move(0);
-    }
-    
-    if (state == 2)
-    {
-        wall_motor.move(127);
-        pros::delay(2000);
-        wall_motor.move(0);
-    }
+
     
 }
 
@@ -406,10 +415,10 @@ void initialize()
 {
     wall_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     pros::delay(10);
-    wall_rotation.reset();
-    pros::delay(10);
-    wall_rotation.reset_position();
-    pros::delay(10);
+    // wall_rotation.reset();
+    // pros::delay(10);
+    // wall_rotation.reset_position();
+    // pros::delay(10);
     // // Initialize button styles for blue
     // lv_style_init(&blue_style);
     // lv_style_set_bg_color(&blue_style, BLUE_COLOR);
@@ -459,19 +468,17 @@ void initialize()
 
     // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     // updateScreen();                               // prints to brain screen
-    bool xPos;
-    bool yPos;
-    bool theta;
     // cannot use if using auton selector
-
+    pros::delay(10);
     pros::lcd::initialize(); // initialize brain screen
+    pros::delay(10);
     pros::Task screen_task([&]()
                            {
         while (true) {
             // print robot location to the brain screen
-            pros::lcd::print(0, "target: %d", loadToggle);
-            pros::lcd::print(1, "toutput: %f", toutput);
-            pros::lcd::print(2, "wallAngle: %f", wallAngle); // heading
+            pros::lcd::print(0, "wallStake: %i", loadToggle);
+            // pros::lcd::print(1, "toutput: %f", toutput);
+            // pros::lcd::print(2, "wallAngle: %f", wallAngle); // heading
             // delay to save resources
             pros::delay(20);
         } });
@@ -565,24 +572,23 @@ void autonomous()
 
 bool intake = false;
 bool outake = false;
-int loadToggle = 0;
 
 void opcontrol()
 {
+    pros::Task wallstake_task(wallStake);
+    // // pros::Task wallangle_task(wallAngleTrack);
     pros::delay(10);
-    // pros::Task wallangle_task(wallAngleTrack);
-    pros::delay(10);
-    pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
-    pros::delay(10);
-    // lv_timer_handler(); // Process LVGL tasks
-    // pros::Task foxglove_task(foxglove);
+    // // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
+    // pros::delay(10);
+    // // lv_timer_handler(); // Process LVGL tasks
+    // // pros::Task foxglove_task(foxglove);
 
-    // pros::Task holdring_trak(holdRing);
+    // // pros::Task holdring_trak(holdRing);
 
-    // pros::Task colorsort_task(colorSort);
-    pros::delay(10);
-    // pros::Task turnpid_task(TurnPid);
-    pros::delay(10);
+    // // pros::Task colorsort_task(colorSort);
+    // pros::delay(10);
+    // // pros::Task turnpid_task(TurnPid);
+    // pros::delay(10);
     // sort = true;
     // while (true)
     // {
@@ -598,11 +604,11 @@ void opcontrol()
     {
         // get left y and right x positions
 
-        // int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        // int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // // move the robot
-        // chassis.arcade((leftY), rightX);
+        chassis.arcade(leftY, rightX);
 
         // buttons
 
@@ -639,31 +645,41 @@ void opcontrol()
             {
                 intakeStop();
             }
-
-        } // activate outake
-
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
-        {
-            if (loadToggle == 0 || loadToggle == 2)
-            {
-                loadToggle == 1;
-            } else {
-                loadToggle == 2;
-            }
-            
-            wallStake(2);
         }
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))
+        {
+            intakeBackward();
+            pros::delay(10);
+            intakeStop();
+        }
+        // activate outake
+
+        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+        // {
+        //     if (loadToggle == 0 || loadToggle == 2)
+        //     {
+        //         loadToggle = 1; //1
+        //     } else {
+        //         loadToggle = 2;
+        //     }
+        //     wallStake(loadToggle);
+        // }
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            //toggle between states 0 and 1
-            if (loadToggle == 1 || loadToggle == 2)
+            if (loadToggle == 0)
+            {
+                loadToggle = 1; // 0
+            }
+            else if (loadToggle == 1)
+            {
+
+                loadToggle = 2;
+            }
+            else
             {
                 loadToggle = 0;
-            } else {
-                loadToggle == 1;
             }
-            
-            wallStake(loadToggle);
+            shouldGo = true;
         }
         // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
         // {
