@@ -6,13 +6,13 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // drive motors
-#define LEFT_FRONT_DRIVE -21
-#define LEFT_MIDDLE_DRIVE -17
-#define LEFT_BACK_DRIVE -10
+#define LEFT_FRONT_DRIVE -21 //c
+#define LEFT_MIDDLE_DRIVE -18 //c
+#define LEFT_BACK_DRIVE -19 //c
 
-#define RIGHT_FRONT_DRIVE 13
-#define RIGHT_MIDDLE_DRIVE 12
-#define RIGHT_BACK_DRIVE 14
+#define RIGHT_FRONT_DRIVE 14 //c
+#define RIGHT_MIDDLE_DRIVE 15 //c
+#define RIGHT_BACK_DRIVE 16 //c
 
 // drive config
 #define DRIVE_GEARSET pros::E_MOTOR_GEARSET_06
@@ -20,21 +20,23 @@
 #define DRIVE_RPM 450
 
 // intake motors
-#define INTAKE_PREROLLER 19
-#define INTAKE_HOOKS -1
+#define INTAKE_PREROLLER 17 //c
+#define INTAKE_HOOKS -20 //c
 
 // wall stake motors
-#define WALL_MOTOR 2
+#define WALL_MOTOR 3 //c
 
 // pneumatics
 #define DOINKER 'G'
-#define CLAMP 'H'
+#define CLAMP 'C'
+#define RUSH 'A'
+#define LIFT 'E'
 
 // sensors
 #define WALL_ROTATION 15
-#define IMU 19
-#define VERTICAL_ODOM -12
-#define HORIZONTAL_ODOM 18
+#define IMU 10             // c
+#define VERTICAL_ODOM 13   // c
+#define HORIZONTAL_ODOM 12 // c
 
 // ring hold
 #define RING_DISTANCE 5
@@ -67,6 +69,8 @@ inline pros::Imu imu(IMU);
 
 inline pros::adi::Pneumatics clamp(CLAMP, false);
 inline pros::adi::Pneumatics doinker(DOINKER, false);
+inline pros::adi::Pneumatics rush(RUSH, false);
+inline pros::adi::Pneumatics lift(LIFT, false);
 
 inline pros::Distance ring_distance(RING_DISTANCE);
 inline pros::Optical ring_color(RING_COLOR);

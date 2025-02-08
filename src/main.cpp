@@ -351,7 +351,7 @@ void wallStake()
         }
         pros::delay(10);
     }
-    
+
     // double bottom = 0;
     // double load = -18;
     // double score = -120;
@@ -372,8 +372,6 @@ void wallStake()
     //     target = bottom;
     //     break;
     // }
-
-    
 }
 
 // test
@@ -572,6 +570,8 @@ void autonomous()
 
 bool intake = false;
 bool outake = false;
+bool doinkerToggle = false;
+bool rushToggle = false;
 
 void opcontrol()
 {
@@ -681,29 +681,45 @@ void opcontrol()
             }
             shouldGo = true;
         }
-        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
-        // {
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+        {
 
-        //     clamp = !clamp;
-        // }
+            clamp.extend();
+        }
 
-        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
-        // {
-        //     doinker = !doinker;
-        // }
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+        {
+            // doinkerToggle = !doinkerToggle;
+            // if (doinkerToggle)
+            // {
+            //     doinker.extend();
+            // }  else
+            // {
+            //     doinker.retract();
+            // }
+            lift.toggle();
+        }
 
-        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-        // {
-        // }
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
+        {
+            rushToggle = !rushToggle;
+            if (rushToggle)
+            {
+                rush.extend();
+            }
+            else
+            {
+                rush.retract();
+            }
+        }
+        
 
-        // if (doinker)
-        // {
-        //     doinker_piston.extend();
-        // }
-        // else
-        // {
-        //     doinker_piston.retract();
-        // }
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+        {
+            clamp.retract();
+        }
+
+        
 
         // if (clamp)
         // {
