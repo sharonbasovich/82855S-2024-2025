@@ -27,16 +27,16 @@
 #define WALL_MOTOR 3 //c
 
 // pneumatics
-#define DOINKER 'G'
+#define DOINKER 'A'
 #define CLAMP 'C'
-#define RUSH 'A'
+#define RUSH 'G'
 #define LIFT 'E'
 
 // sensors
 #define WALL_ROTATION 15
 #define IMU 10             // c
 #define VERTICAL_ODOM 13   // c
-#define HORIZONTAL_ODOM 12 // c
+#define HORIZONTAL_ODOM -12 // c
 
 // ring hold
 #define RING_DISTANCE 5
@@ -70,7 +70,7 @@ inline pros::Imu imu(IMU);
 inline pros::adi::Pneumatics clamp(CLAMP, false);
 inline pros::adi::Pneumatics doinker(DOINKER, false);
 inline pros::adi::Pneumatics rush(RUSH, false);
-inline pros::adi::Pneumatics lift(LIFT, false);
+inline pros::adi::Pneumatics lift(LIFT, true);
 
 inline pros::Distance ring_distance(RING_DISTANCE);
 inline pros::Optical ring_color(RING_COLOR);

@@ -123,15 +123,15 @@ bool stationary = false;
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_mg,                   // left motor group
                               &right_mg,                  // right motor group
-                              12,                         // 12 inch track width
+                              10.5,                       // 12 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
                               450,                        // drivetrain rpm is 450
                               2                           // horizontal drift is 2 (for now)
 );
 
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_odom, lemlib::Omniwheel::NEW_275, 1);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_odom, lemlib::Omniwheel::NEW_2, -3.25);
 
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_odom, lemlib::Omniwheel::NEW_275, -1.5);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_odom, lemlib::Omniwheel::NEW_2, 0.5);
 
 lemlib::OdomSensors sensors(
     &vertical_tracking_wheel,   // vertical tracking wheel 1, set to null
@@ -143,27 +143,27 @@ lemlib::OdomSensors sensors(
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(8,  // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
                                               0,  // integral gain (kI)
-                                              10, // derivative gain (kD)
+                                              38, // derivative gain (kD)
                                               0,  // anti windup
                                               0,  // small error range, in inches
                                               0,  // small error range timeout, in milliseconds
                                               0,  // large error range, in inches
                                               0,  // large error range timeout, in milliseconds
-                                              100 // maximum acceleration (slew)
+                                              0   // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(6,   // proportional gain (kP)
-                                              0,   // integral gain (kI)
-                                              18,  // derivative gain (kD)
-                                              3,   // anti windup
-                                              1,   // small error range, in degrees
-                                              100, // small error range timeout, in milliseconds
-                                              3,   // large error range, in degrees
-                                              500, // large error range timeout, in milliseconds
-                                              0    // maximum acceleration (slew)
+lemlib::ControllerSettings angular_controller(6,  // proportional gain (kP)
+                                              0,  // integral gain (kI)
+                                              46, // derivative gain (kD)
+                                              0,  // anti windup
+                                              0,  // small error range, in inches
+                                              0,  // small error range timeout, in milliseconds
+                                              0,  // large error range, in inches
+                                              0,  // large error range timeout, in milliseconds
+                                              0   // maximum acceleration (slew)
 );
 
 lemlib::ExpoDriveCurve
@@ -330,7 +330,7 @@ void wallStake()
         {
             shouldGo = false;
             wall_motor.move(127);
-            pros::delay(180);
+            pros::delay(160);
             // wall_motor.move(0);
             wall_motor.brake();
         }
@@ -338,7 +338,7 @@ void wallStake()
         {
             shouldGo = false;
             wall_motor.move(-127);
-            pros::delay(2000);
+            pros::delay(800);
             wall_motor.move(0);
         }
 
@@ -346,8 +346,6 @@ void wallStake()
         {
             shouldGo = false;
             wall_motor.move(127);
-            pros::delay(2000);
-            wall_motor.move(0);
         }
         pros::delay(10);
     }
@@ -461,7 +459,8 @@ void initialize()
     //         button_count++;
     //     }
     // }
-
+    lift.extend();
+    pros::delay(10);
     chassis.calibrate(); // calibrate sensors
 
     // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
@@ -474,8 +473,8 @@ void initialize()
                            {
         while (true) {
             // print robot location to the brain screen
-            pros::lcd::print(0, "wallStake: %i", loadToggle);
-            // pros::lcd::print(1, "toutput: %f", toutput);
+            pros::lcd::print(0, "vertical: %i", vertical_odom.get_position());
+            pros::lcd::print(1, "horizontal: %i", horizontal_odom.get_position());
             // pros::lcd::print(2, "wallAngle: %f", wallAngle); // heading
             // delay to save resources
             pros::delay(20);
@@ -515,6 +514,65 @@ void competition_initialize() {}
 
 void autonomous()
 {
+    // set position to x:0, y:0, heading:0
+    // chassis.setPose(58.5, 12.5, 0);
+    // pros::delay(10);
+    // chassis.moveToPoint(54, -16, 3000, {.forwards=false});
+    // chassis.turnToHeading(340, 2000);
+    // pros::delay(10);
+    // lift.extend();
+    // pros::delay(10);
+    // intake_preroller.move(127);
+    // chassis.moveToPoint(47, -9, 2000, {.maxSpeed = 40});
+    // pros::delay(2000);
+    // lift.retract();
+    // pros::delay(1000);
+    // chassis.turnToHeading(270, 1000, {.maxSpeed = 60});
+    // chassis.moveToPoint(57, 0, 2000, {.forwards = false, .maxSpeed = 60});
+
+    // two ring right side
+    // chassis.setPose(60, 47, 270);
+    // pros::delay(10);
+    // lift.retract();
+    // pros::delay(10);
+    // intake_preroller.move(127);
+    // pros::delay(10);
+    // chassis.moveToPoint(20, 47, 2000, {.maxSpeed = 60});
+    // chassis.turnToHeading(180, 2000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 60});
+    // pros::delay(2000);
+    // chassis.moveToPoint(30, 28, 2000, {.forwards = false, .maxSpeed = 50});
+    // pros::delay(2000);
+    // clamp.extend();
+    // pros::delay(10);
+    // intakeForward();
+    // pros::delay(3000);
+    // chassis.moveToPoint(30, 20, 5000, {.forwards = false, .maxSpeed = 40});
+
+    // //two ring left side
+    chassis.setPose(60, -47, 270);
+    pros::delay(10);
+    lift.retract();
+    pros::delay(10);
+    intake_preroller.move(127);
+    pros::delay(10);
+    chassis.moveToPoint(20, -47, 2000, {.maxSpeed = 60});
+    chassis.turnToHeading(180, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 60});
+    pros::delay(2000);
+    chassis.moveToPoint(30, -28, 2000, {.forwards = false, .maxSpeed = 50});
+    pros::delay(2000);
+    clamp.extend();
+    pros::delay(10);
+    intakeForward();
+    pros::delay(3000);
+    intakeStop();
+    pros::delay(10);
+    chassis.moveToPoint(41, -6.5, 5000, {.maxSpeed = 60});
+    lift.extend();
+    pros::delay(10);
+    intake_preroller.move(127);
+    // chassis.moveToPoint(30, -20, 5000, {.forwards = false, .maxSpeed = 40});
+
+    pros::delay(10000);
 }
 
 /**
@@ -577,6 +635,8 @@ void opcontrol()
 {
     pros::Task wallstake_task(wallStake);
     // // pros::Task wallangle_task(wallAngleTrack);
+    pros::delay(10);
+    lift.retract();
     pros::delay(10);
     // // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     // pros::delay(10);
@@ -646,7 +706,7 @@ void opcontrol()
                 intakeStop();
             }
         }
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         {
             intakeBackward();
             pros::delay(10);
@@ -662,9 +722,8 @@ void opcontrol()
         //     } else {
         //         loadToggle = 2;
         //     }
-        //     wallStake(loadToggle);
         // }
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
         {
             if (loadToggle == 0)
             {
@@ -687,39 +746,46 @@ void opcontrol()
             clamp.extend();
         }
 
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
-        {
-            // doinkerToggle = !doinkerToggle;
-            // if (doinkerToggle)
-            // {
-            //     doinker.extend();
-            // }  else
-            // {
-            //     doinker.retract();
-            // }
-            lift.toggle();
-        }
+        // if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+        // {
+        //     // doinkerToggle = !doinkerToggle;
+        //     // if (doinkerToggle)
+        //     // {
+        //     //     doinker.extend();
+        //     // }  else
+        //     // {
+        //     //     doinker.retract();
+        //     // }
+        //     lift.toggle();
+        // }
 
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
         {
-            rushToggle = !rushToggle;
-            if (rushToggle)
+            intake_preroller.move(127);
+            // doinker.extend();
+            // pros::delay(1000);
+            // doinker.retract();
+        }
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))
+        {
+            intake_preroller.move(0);
+        }
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
+        {
+            doinkerToggle = !doinkerToggle;
+            if (doinkerToggle)
             {
-                rush.extend();
+                doinker.extend();
             }
             else
             {
-                rush.retract();
+                doinker.retract();
             }
         }
-        
-
-        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
         {
             clamp.retract();
         }
-
-        
 
         // if (clamp)
         // {
