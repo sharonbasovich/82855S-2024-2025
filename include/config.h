@@ -68,7 +68,7 @@ inline pros::Motor intake_preroller(INTAKE_PREROLLER);
 inline pros::Imu imu(IMU);
 
 inline pros::adi::Pneumatics clamp(CLAMP, false);
-inline pros::adi::Pneumatics doinker(DOINKER, false);
+inline pros::adi::Pneumatics doinker(DOINKER, true);
 inline pros::adi::Pneumatics rush(RUSH, false);
 inline pros::adi::Pneumatics lift(LIFT, true);
 

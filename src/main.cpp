@@ -461,6 +461,8 @@ void initialize()
     // }
     lift.extend();
     pros::delay(10);
+    doinker.extend();
+    pros::delay(10);
     chassis.calibrate(); // calibrate sensors
 
     // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
@@ -514,65 +516,192 @@ void competition_initialize() {}
 
 void autonomous()
 {
-    // set position to x:0, y:0, heading:0
-    // chassis.setPose(58.5, 12.5, 0);
-    // pros::delay(10);
-    // chassis.moveToPoint(54, -16, 3000, {.forwards=false});
-    // chassis.turnToHeading(340, 2000);
-    // pros::delay(10);
-    // lift.extend();
-    // pros::delay(10);
-    // intake_preroller.move(127);
-    // chassis.moveToPoint(47, -9, 2000, {.maxSpeed = 40});
-    // pros::delay(2000);
-    // lift.retract();
-    // pros::delay(1000);
-    // chassis.turnToHeading(270, 1000, {.maxSpeed = 60});
-    // chassis.moveToPoint(57, 0, 2000, {.forwards = false, .maxSpeed = 60});
-
-    // two ring right side
-    // chassis.setPose(60, 47, 270);
+    //elims right side
+    // chassis.setPose(0, 0, 0);
     // pros::delay(10);
     // lift.retract();
     // pros::delay(10);
-    // intake_preroller.move(127);
-    // pros::delay(10);
-    // chassis.moveToPoint(20, 47, 2000, {.maxSpeed = 60});
-    // chassis.turnToHeading(180, 2000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 60});
-    // pros::delay(2000);
-    // chassis.moveToPoint(30, 28, 2000, {.forwards = false, .maxSpeed = 50});
-    // pros::delay(2000);
+    // chassis.moveToPoint(0, -40, 5000, {.forwards = false, .maxSpeed = 50});
+    // pros::delay(5000);
     // clamp.extend();
-    // pros::delay(10);
+    // pros::delay(1000);
     // intakeForward();
+    // chassis.turnToHeading(280, 3000);
     // pros::delay(3000);
-    // chassis.moveToPoint(30, 20, 5000, {.forwards = false, .maxSpeed = 40});
+    // chassis.moveToPoint((-28*1.2), (-22), 3000);
 
-    // //two ring left side
-    chassis.setPose(60, -47, 270);
+    //elims left side
+    chassis.setPose(0, 0, 0);
     pros::delay(10);
     lift.retract();
     pros::delay(10);
-    intake_preroller.move(127);
-    pros::delay(10);
-    chassis.moveToPoint(20, -47, 2000, {.maxSpeed = 60});
-    chassis.turnToHeading(180, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 60});
-    pros::delay(2000);
-    chassis.moveToPoint(30, -28, 2000, {.forwards = false, .maxSpeed = 50});
-    pros::delay(2000);
+    chassis.moveToPoint(0, -40, 5000, {.forwards = false, .maxSpeed = 50});
+    pros::delay(5000);
     clamp.extend();
-    pros::delay(10);
+    pros::delay(1000);
     intakeForward();
+    chassis.turnToHeading(-280, 3000);
     pros::delay(3000);
-    intakeStop();
-    pros::delay(10);
-    chassis.moveToPoint(41, -6.5, 5000, {.maxSpeed = 60});
-    lift.extend();
-    pros::delay(10);
-    intake_preroller.move(127);
-    // chassis.moveToPoint(30, -20, 5000, {.forwards = false, .maxSpeed = 40});
+    chassis.moveToPoint((28 * 1.2), (-22), 3000);
+    // pros::delay(3000);
+    // chassis.turnToHeading(150, 2000, {.maxSpeed = 80});
+    // pros::delay(2000);
+    // chassis.moveToPoint(44, -60, 5000, {.maxSpeed = 60});
 
-    pros::delay(10000);
+    // prog skills
+
+    // prog skills
+
+    //   chassis.setPose(-58.3, -1.3, 90); // start
+    //   pros::delay(200);
+    //   intakeForward(); // alliance
+    //   pros::delay(1000);
+    //   lift.extend();
+    //   pros::delay(10);
+    //   chassis.moveToPoint(-47, -1.3, 2000, {.maxSpeed = 60}); // move to mogo goal 1
+    //   pros::delay(2000);
+    //  chassis.turnToHeading(180, 2000, {.maxSpeed = 40});
+    //   pros::delay(2000);
+    //   chassis.moveToPoint(-52, 24, 2000,  {.forwards = false, .maxSpeed = 60});
+    //   pros::delay(2000);
+    //   clamp.extend(); // clamp
+    //   pros::delay(1000);
+    //  chassis.turnToHeading(90, 2000);//turn to ring
+    //   // Mogo 1 Ring 1
+    //   chassis.moveToPoint(-23, 21, 2000,  {.maxSpeed = 60}); // ring 1
+    //   pros::delay(1000);
+    //   chassis.turnToHeading(135,2000);
+    //   chassis.moveToPoint(-67, 59,4000, {.forwards = false, .maxSpeed = 60});
+    //   clamp.retract();
+    //   pros::delay(1040);
+    //   chassis.moveToPoint(-55,43,1000, {.maxSpeed = 40});
+    //   pros::delay(1000);
+
+
+      //when PID is tuned
+      /*
+      chassis.turnToHeading(350, 2000, {.maxSpeed = 60}); // turn to ring 2
+      pros::delay(2000);
+      chassis.moveToPoint(-28, 51, 2000, {.maxSpeed = 60}); // move to ring 2
+      pros::delay(2000);
+      chassis.turnToHeading(270, 2000); // turn to ring 3 and 4
+     pros::delay(500);
+     chassis.moveToPoint(-65, 51, 2000, {.maxSpeed = 80}); // move to ring 3 and 4
+     pros::delay(2000);
+     chassis.turnToHeading(45, 2000); // turn ring 5
+     pros::delay(2000);
+     chassis.moveToPoint(-50, 62, 45,  {.maxSpeed = 40}); // move to ring 5
+     pros::delay(2000);
+     chassis.turnToHeading(110, 2000);                                              // turn
+     chassis.moveToPoint(-50.5, 60, 2000, {.forwards = false, .maxSpeed = 20});     // move
+     pros::delay(2000);
+     clamp.retract(); // deposit
+
+     // // mogo 2
+
+     // pros::delay(2000);
+     // chassis.moveToPose(-40, 56, 110, 2000, {.maxSpeed = 40});
+     // pros::delay(2000);
+     // chassis.turnToHeading(55, 2000);
+     // pros::delay(1000);
+     // chassis.moveToPoint(-47, 51, 2000, {.forwards = false, .maxSpeed = 40});
+     // pros::delay(1000);
+     // chassis.turnToHeading(0, 1000);
+     // pros::delay(1000);
+     // // mogo
+     // chassis.moveToPoint(-47, -24, 2000, {.maxSpeed = 40});
+     // pros::delay(1000);
+     // clamp.extend();
+     // // ring 1
+     // chassis.turnToHeading(90, 1000);
+     // pros::delay(1000);
+     // chassis.moveToPoint(-17, -24, 1000, {.maxSpeed = 60});
+     // pros::delay(1000);
+     // // ring 2
+     // chassis.turnToHeading(200, 1000);
+     // pros::delay(1000);
+     // chassis.moveToPoint(-24, -47, 1000, {.maxSpeed = 60});
+     // pros::delay(1000);
+     // // ring 3&4
+     // chassis.turnToHeading(270, 1000);
+     // pros::delay(1000);
+     // chassis.moveToPoint(-58, -47, 1000, {.maxSpeed = 70});
+     // pros::delay(1000);
+     // // ring 5
+     // chassis.turnToHeading(135, 1000);
+     // pros::delay(1000);
+     // chassis.moveToPoint(-48, -58, 1000, {.maxSpeed = 40});
+     // pros::delay(1000);
+     // // deposit mogo
+     // chassis.turnToHeading(70, 1000);
+     // pros::delay(1000);
+     // chassis.moveToPoint(-50.5, -59, 1000, {.maxSpeed = 40});
+     // pros::delay(1000);
+     // clamp.retract();
+     // chassis.moveToPoint(-3, -59, 2000, {.maxSpeed = 40});
+    */
+     // set position to x:0, y:0, heading:0
+     // chassis.setPose(58.5, 12.5, 0);
+     // pros::delay(10);
+     // chassis.moveToPoint(54, -16, 3000, {.forwards=false});
+     // chassis.turnToHeading(340, 2000);
+     // pros::delay(10);
+     // lift.extend();
+     // pros::delay(10);
+     // intake_preroller.move(127);
+     // chassis.moveToPoint(47, -9, 2000, {.maxSpeed = 40});
+     // pros::delay(2000);
+     // lift.retract();
+     // pros::delay(1000);
+     // chassis.turnToHeading(270, 1000, {.maxSpeed = 60});
+     // chassis.moveToPoint(57, 0, 2000, {.forwards = false, .maxSpeed = 60});
+
+     // two ring right side
+     // chassis.setPose(60, 47, 270);
+     // pros::delay(10);
+     // lift.retract();
+     // pros::delay(10);
+     // intake_preroller.move(127);
+     // pros::delay(10);
+     // chassis.moveToPoint(20, 47, 2000, {.maxSpeed = 60});
+     // chassis.turnToHeading(180, 2000, {.direction = AngularDirection::CW_CLOCKWISE, .maxSpeed = 60});
+     // pros::delay(2000);
+     // chassis.moveToPoint(30, 28, 2000, {.forwards = false, .maxSpeed = 50});
+     // pros::delay(2000);
+     // clamp.extend();
+     // pros::delay(10);
+     // intakeForward();
+     // pros::delay(3000);
+     // chassis.moveToPoint(30, 20, 5000, {.forwards = false, .maxSpeed = 40});
+
+     // //two ring left side
+     /*
+     chassis.setPose(60, -47, 270);
+     pros::delay(10);
+     lift.retract();
+     pros::delay(10);
+     intake_preroller.move(127);
+     pros::delay(10);
+     chassis.moveToPoint(20, -47, 2000, {.maxSpeed = 60});
+     chassis.turnToHeading(180, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 60});
+     pros::delay(2000);
+     chassis.moveToPoint(30, -28, 2000, {.forwards = false, .maxSpeed = 50});
+     pros::delay(2000);
+     clamp.extend();
+     pros::delay(10);
+     intakeForward();
+     pros::delay(3000);
+     intakeStop();
+     pros::delay(10);
+     chassis.moveToPoint(41, -6.5, 5000, {.maxSpeed = 60});
+     lift.extend();
+     pros::delay(10);
+     intake_preroller.move(127);
+     chassis.moveToPoint(30, -20, 5000, {.forwards = false, .maxSpeed = 40});
+
+
+     */
+     pros::delay(10000);
 }
 
 /**
