@@ -6,13 +6,13 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // drive motors
-#define LEFT_FRONT_DRIVE -21 //c
-#define LEFT_MIDDLE_DRIVE -18 //c
-#define LEFT_BACK_DRIVE -19 //c
+#define LEFT_FRONT_DRIVE -10
+#define LEFT_MIDDLE_DRIVE -20
+#define LEFT_BACK_DRIVE -19
 
-#define RIGHT_FRONT_DRIVE 14 //c
-#define RIGHT_MIDDLE_DRIVE 15 //c
-#define RIGHT_BACK_DRIVE 16 //c
+#define RIGHT_FRONT_DRIVE 10
+#define RIGHT_MIDDLE_DRIVE 8
+#define RIGHT_BACK_DRIVE 9
 
 // drive config
 #define DRIVE_GEARSET pros::E_MOTOR_GEARSET_06
@@ -20,33 +20,33 @@
 #define DRIVE_RPM 450
 
 // intake motors
-#define INTAKE_PREROLLER 17 //c
-#define INTAKE_HOOKS -20 //c
+#define INTAKE_PREROLLER 17
+#define INTAKE_HOOKS -14
 
 // wall stake motors
-#define WALL_MOTOR 3 //c
+#define WALL_MOTOR 3
 
 // pneumatics
-#define DOINKER 'A'
-#define CLAMP 'C'
-#define RUSH 'G'
-#define LIFT 'E'
+#define DOINKER 'G'
+#define CLAMP 'B'
+#define RUSH 'H'
+#define LIFT 'C'//h
 
 // sensors
-#define WALL_ROTATION 15
-#define IMU 10             // c
-#define VERTICAL_ODOM 13   // c
-#define HORIZONTAL_ODOM -12 // c
+#define WALL_ROTATION 6
+#define IMU 12            
+#define VERTICAL_ODOM 16   
+#define HORIZONTAL_ODOM -13 
 
 // ring hold
-#define RING_DISTANCE 5
+#define RING_DISTANCE 7
 //**IN MILLIMETERS** the value that the ring must be closer than to be detected
-#define RING_DISTANCE_THRESHOLD 100
+#define RING_DISTANCE_THRESHOLD 30
 
 // color sort
-#define RING_COLOR 6
+#define RING_COLOR 2
 //*IN MILLISECONDS* the time that it takes for the ring to reach the top of the hooks from when the color sensor detects it*/
-#define COLOR_TIME 400
+#define COLOR_TIME 150
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 inline pros::Motor left_front_drive(LEFT_FRONT_DRIVE);
