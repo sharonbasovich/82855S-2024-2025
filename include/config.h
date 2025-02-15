@@ -6,7 +6,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // drive motors
-#define LEFT_FRONT_DRIVE -10
+#define LEFT_FRONT_DRIVE -18
 #define LEFT_MIDDLE_DRIVE -20
 #define LEFT_BACK_DRIVE -19
 

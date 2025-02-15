@@ -233,8 +233,7 @@ void colorSort()
     while (true)
     {
         hue = ring_color.get_hue();
-        // sort && ((isRed * hue) < 30) && ((!isRed) * (hue > 100)) &&
-        if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+        if (sort && ((isRed * hue) < 30) && ((!isRed) * (hue > 100)) && (ring_distance.get() < RING_DISTANCE_THRESHOLD))
         {
             pros::delay(COLOR_TIME);
             intakeBackward();
@@ -329,7 +328,7 @@ void wallPID()
     double score = 210;
 
     const double tkP = 1.5;
-    const double tkI = 0; // 00004;//lower the more perscise
+    const double tkI = 0;   // 00004;//lower the more perscise
     const double tkD = 0.5; // 4larger the stronger the the kD is so response is quicker
 
     double terror = 0;
