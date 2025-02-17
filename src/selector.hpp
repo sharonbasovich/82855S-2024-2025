@@ -1,8 +1,8 @@
 // The name and color of each program
-#define PN1 "rush"
+#define PN1 "ring rush"
 #define PC1 true
 
-#define PN2 "rush"
+#define PN2 "goal rush"
 #define PC2 false
 
 #define PN3 "prog"

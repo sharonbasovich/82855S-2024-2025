@@ -254,29 +254,25 @@ void colorSort()
     }
 }
 
-// void foxglove()
-// {
-//     // float a = 0;
-//     // float b = 0;
-//     // float c = 0;
-//     // int x = 0;
+void foxglove()
+{
 
-//     std::cout << "foxglove" << std::endl; // flag to indicate new session
-//     pros::delay(50);
-//     while (true)
-//     {
-//         lemlib::Pose pose = chassis.getPose();
-//         Odometry odom = {std::ceil((double)pose.x * 100.0) / 100.0, std::ceil((double)pose.y * 100.0) / 100.0, std::ceil((double)pose.theta * 100.0) / 100.0};
-//         // Odometry odom = {std::ceil((double)a * 100.0) / 100.0, std::ceil((double)b * 100.0) / 100.0, std::ceil((double)0 * 100.0) / 100.0};
+    std::cout << "foxglove" << std::endl; // flag to indicate new session
+    pros::delay(50);
+    while (true)
+    {
+        lemlib::Pose pose = chassis.getPose(); //get position of robot
 
-//         Message msg{"odometry", odom};
-//         std::cout << static_cast<json>(msg) << std::flush;
-//         pros::delay(50);
-//         // a++;
-//         // b++;
-//         // c++;
-//     }
-// }
+        //round and format for effective throughput
+        Odometry odom = {std::ceil((double)pose.x * 100.0) / 100.0, std::ceil((double)pose.y * 100.0) / 100.0, std::ceil((double)pose.theta * 100.0) / 100.0};
+
+        //use helper functions to add json to cout stream
+        Message msg{"odometry", odom};
+        std::cout << static_cast<json>(msg) << std::flush;
+        pros::delay(50);
+        
+    }
+}
 
 // void updateController()
 // {
@@ -393,49 +389,51 @@ void initialize()
     // wall_rotation.reset_position();
     // pros::delay(10);
     // Initialize button styles for blue
-    // lv_style_init(&blue_style);
-    // lv_style_set_bg_color(&blue_style, BLUE_COLOR);
+    lv_style_init(&blue_style);
+    lv_style_set_bg_color(&blue_style, BLUE_COLOR);
 
-    // // Initialize button styles for red
-    // lv_style_init(&red_style);
-    // lv_style_set_bg_color(&red_style, RED_COLOR);
+    // Initialize button styles for red
+    lv_style_init(&red_style);
+    lv_style_set_bg_color(&red_style, RED_COLOR);
 
-    // // Create the readout that displays which program is selected
-    // readout_label = lv_label_create(lv_scr_act());
+    // Create the readout that displays which program is selected
+    readout_label = lv_label_create(lv_scr_act());
 
-    // // Indicate that no program has been selected yet
-    // lv_label_set_text(readout_label, "Auto: NONE");
+    // Indicate that no program has been selected yet
+    lv_label_set_text(readout_label, "Auto: NONE");
 
-    // // Position the readout
-    // lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
+    // Position the readout
+    lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
 
-    // // Create buttons in a grid pattern
-    // int button_count = 0;
-    // for (int row = 0; row < 5; row++)
-    // {
-    //     for (int col = 0; col < num_columns; col++)
-    //     {
-    //         // Stop if all the buttons are created
-    //         if (button_count >= NUM_BUTTONS)
-    //         {
-    //             break;
-    //         }
+    // Create buttons in a grid pattern
+    int button_count = 0;
+    for (int row = 0; row < 5; row++)
+    {
+        for (int col = 0; col < num_columns; col++)
+        {
+            // Stop if all the buttons are created
+            if (button_count >= NUM_BUTTONS)
+            {
+                break;
+            }
 
-    //         lv_coord_t x = x_start + col * x_offset; // Calculate x position
-    //         lv_coord_t y = y_start + row * y_offset; // Calculate y position
+            lv_coord_t x = x_start + col * x_offset; // Calculate x position
+            lv_coord_t y = y_start + row * y_offset; // Calculate y position
 
-    //         // Get label text and color info from the 2D array
-    //         const char *label_text = button_info[button_count].label;
-    //         bool is_red = button_info[button_count].is_red;
-    //         int button_value = (button_count + 1);
+            // Get label text and color info from the 2D array
+            const char *label_text = button_info[button_count].label;
+            bool is_red = button_info[button_count].is_red;
+            int button_value = (button_count + 1);
 
-    //         // Use the previously created button creator with the values for the current button
-    //         create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
+            // Use the previously created button creator with the values for the current button
+            create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
 
-    //         // Track the number of buttons created
-    //         button_count++;
-    //     }
-    // }
+            // Track the number of buttons created
+            button_count++;
+        }
+    }
+
+
     lift.extend();
     pros::delay(10);
     doinker.extend();
