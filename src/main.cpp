@@ -239,14 +239,14 @@ void colorSort()
             {
                 pros::delay(COLOR_TIME);
                 intakeBackward();
-                pros::delay(70);
+                pros::delay(150);
                 intakeForward();
             }
             else if (isRed && hue > 100)
             {
                 pros::delay(COLOR_TIME);
                 intakeBackward();
-                pros::delay(70);
+                pros::delay(150);
                 intakeForward();
             }
         }
@@ -261,16 +261,15 @@ void foxglove()
     pros::delay(50);
     while (true)
     {
-        lemlib::Pose pose = chassis.getPose(); //get position of robot
+        lemlib::Pose pose = chassis.getPose(); // get position of robot
 
-        //round and format for effective throughput
+        // round and format for effective throughput
         Odometry odom = {std::ceil((double)pose.x * 100.0) / 100.0, std::ceil((double)pose.y * 100.0) / 100.0, std::ceil((double)pose.theta * 100.0) / 100.0};
 
-        //use helper functions to add json to cout stream
+        // use helper functions to add json to cout stream
         Message msg{"odometry", odom};
         std::cout << static_cast<json>(msg) << std::flush;
         pros::delay(50);
-        
     }
 }
 
@@ -329,9 +328,9 @@ double wallAngle;
 
 void wallPID()
 {
-    double bottom = 60;
-    double load = 110;
-    double score = 205;
+    double bottom = 20;
+    double load = 47;
+    double score = 160;
 
     const double tkP = 1.5;
     const double tkI = 0;   // 00004;//lower the more perscise
@@ -360,7 +359,7 @@ void wallPID()
             target = bottom;
             break;
         }
-        wallAngle = wall_rotation.get_angle() / 100;
+        wallAngle = wall_rotation.get_position() / 100;
         terror = target - wallAngle;
         tintegral += terror;
         tderivative = terror - tprevious_error;
@@ -384,10 +383,10 @@ void initialize()
 {
     // wall_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     // pros::delay(10);
-    wall_rotation.reset();
-    pros::delay(10);
-    // wall_rotation.reset_position();
+    // wall_rotation.reset();
     // pros::delay(10);
+    wall_rotation.set_position(2000);
+    pros::delay(10);
     // Initialize button styles for blue
     lv_style_init(&blue_style);
     lv_style_set_bg_color(&blue_style, BLUE_COLOR);
@@ -433,7 +432,6 @@ void initialize()
         }
     }
 
-
     lift.extend();
     pros::delay(10);
     doinker.extend();
@@ -450,12 +448,12 @@ void initialize()
                            {
         while (true) {
             // print robot location to the brain screen
-            // pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_angle())/100.0);
-            // pros::lcd::print(1, "target: %f", target);
-            // pros::lcd::print(2, "toutput: %f", toutput);
-            pros::lcd::print(0, "hue: %f", ring_color.get_hue());
-            pros::lcd::print(1, "distance: %i", ring_distance.get());
-            pros::lcd::print(2,"heading: %f", imu.get_heading());
+            pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
+            pros::lcd::print(1, "target: %f", target);
+            pros::lcd::print(2, "toutput: %f", toutput);
+            // pros::lcd::print(0, "hue: %f", ring_color.get_hue());
+            // pros::lcd::print(1, "distance: %i", ring_distance.get());
+            // pros::lcd::print(2,"heading: %f", imu.get_heading());
             // pros::lcd::print(2, "toutput: %f", toutput);
 
             // delay to save resources
@@ -507,40 +505,40 @@ void autonomous()
     pros::delay(1000);
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
-    chassis.moveToPose(-65 , -3, 315, 2000, {.lead = 0.14, .maxSpeed = 80});
+    chassis.moveToPose(-65, -3, 315, 2000, {.lead = 0.14, .maxSpeed = 80});
     pros::delay(2000);
     // wall stake movement
     state += 2;
     pros::delay(1000);
     state -= 2;
     pros::delay(1000);
-    chassis.moveToPoint(-53.5, -33, 2000, {.forwards = false, .maxSpeed =60});
+    chassis.moveToPoint(-53.5, -33, 2000, {.forwards = false, .maxSpeed = 60});
     pros::delay(1000);
     intakeForward();
     pros::delay(10);
     // Ring 1
-    //intake lift up
+    // intake lift up
     chassis.turnToPoint(-31, -36, 2000, {.forwards = false, .direction = AngularDirection::CW_CLOCKWISE});
     pros::delay(2000);
     chassis.moveToPoint(-31, -36, 3000, {.forwards = false, .maxSpeed = 30});
     pros::delay(2000);
     clamp.extend();
     pros::delay(500);
-    chassis.turnToHeading(0,1000);
+    chassis.turnToHeading(0, 1000);
     pros::delay(1000);
-    chassis.moveToPoint(-24,-70,2000, {.maxSpeed = 60});
+    chassis.moveToPoint(-24, -70, 2000, {.maxSpeed = 60});
     pros::delay(2000);
-   // chassis.turnToPoint(-2, 50, 2000, {.maxSpeed = 60});
-    //pros::delay(2000);
-    //chassis.moveToPoint(-2,50,2000, {.maxSpeed = 60});
+    // chassis.turnToPoint(-2, 50, 2000, {.maxSpeed = 60});
+    // pros::delay(2000);
+    // chassis.moveToPoint(-2,50,2000, {.maxSpeed = 60});
     pros::delay(4000);
-    //move to ladder
-    //chassis.moveToPose(5,35,180, 2000,{.lead = 0.14, .maxSpeed = 80});
+    // move to ladder
+    // chassis.moveToPose(5,35,180, 2000,{.lead = 0.14, .maxSpeed = 80});
     pros::delay(100000);
 
     // // chassis.moveToPoint(-47, 23, 2000, {.forwards = false, .maxSpeed = 60});
     // // pros::delay(500);
-    
+
     // chassis.turnToHeading(180, 2000);
     // pros::delay(2000);
     // intakeForward();
@@ -619,14 +617,13 @@ void autonomous()
 
     // prog skills
 
-   
     pros::delay(10);
     chassis.moveToPoint(-47, -1.3, 2000, {.maxSpeed = 60}); // move to mogo goal 1
     pros::delay(2000);
     chassis.turnToHeading(180, 2000);
     pros::delay(4000);
     chassis.moveToPoint(-10, -60, 2000, {.maxSpeed = 60});
-    //ring 8, 9
+    // ring 8, 9
     pros::delay(4000);
     chassis.turnToHeading(270, 2000);
     pros::delay(4000);
@@ -634,7 +631,8 @@ void autonomous()
     pros::delay(4000);
     chassis.moveToPoint(-60, -60, 2000, {.forwards = false, .maxSpeed = 60});
     pros::delay(4000);
-    chassis.turnToHeading(45, 2000);    chassis.turnToHeading(180, 2000, {.maxSpeed = 40});
+    chassis.turnToHeading(45, 2000);
+    chassis.turnToHeading(180, 2000, {.maxSpeed = 40});
     pros::delay(2000);
     chassis.moveToPoint(-54, 24, 2000, {.forwards = false, .maxSpeed = 30});
     pros::delay(2000);
@@ -674,7 +672,7 @@ void autonomous()
     pros::delay(500);                                                        // turn
     chassis.moveToPoint(-77, 74, 2000, {.forwards = false, .maxSpeed = 80}); // move
     pros::delay(2000);
-    //from this point, all of these coordinates are guesses
+    // from this point, all of these coordinates are guesses
     chassis.moveToPoint(-59, 66, 2000, {.forwards = false, .maxSpeed = 80});
     pros::delay(4000);
     chassis.turnToHeading(0, 2000);
@@ -682,21 +680,19 @@ void autonomous()
     chassis.moveToPoint(-60, -30, 5000, {.maxSpeed = 80});
 
     pros::delay(4000);
-    // // // mogo 2 
+    // // // mogo 2
     chassis.turnToHeading(300, 2000);
     pros::delay(4000);
     chassis.moveToPoint(-50, -16, 2000, {.forwards = false, .maxSpeed = 60});
     pros::delay(4000);
     clamp.extend();
     pros::delay(500);
-    //ring 6
+    // ring 6
     chassis.turnToHeading(90, 2000);
     pros::delay(4000);
     chassis.moveToPoint(-10, -16, 2000, {.maxSpeed = 60});
     pros::delay(4000);
-    //ring 7
-    
-
+    // ring 7
 
     //  pros::delay(2000);
     // chassis.moveToPose(-40, 56, 110, 2000, {.maxSpeed = 40});
@@ -711,7 +707,7 @@ void autonomous()
     // intakeForward(); // alliance
     // pros::delay(1000);
     // lift.retract
-     
+
     //  chassis.moveToPoint(-47, -24, 2000, {.maxSpeed = 40});
     //  pros::delay(1000);
     //  clamp.extend();
@@ -896,16 +892,17 @@ void opcontrol()
 
     while (true)
     {
-        // get left y and right x positions
-
+        // get left y and right x positions of joystick
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        // // move the robot
+        // move the robot
         chassis.arcade(leftY, rightX);
 
         // buttons
 
+        // when a is pressed, toggle between intaking and stopping the intake
+        // overrides outtaking when pressed
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
         {
             intake = !intake;
@@ -919,6 +916,9 @@ void opcontrol()
                 intakeStop();
             }
         } // activate intake
+
+        // when b is pressed, toggle between outtaking and stopping the intake
+        // overrides intaking when pressed
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
         {
             outake = !outake;
@@ -933,67 +933,69 @@ void opcontrol()
             }
         }
 
+        // when r1 is pressed, moves wall stake mechanism forward by one state
+        // unless wall stake mechanism is already fully extended
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
         {
-            // lb forward
-            //  if (loadToggle == 0)
-            //  {
-            //      loadToggle = 1; // 0
-            //  }
-            //  else if (loadToggle == 1)
-            //  {
 
-            //     loadToggle = 2;
-            // }
-            // else
-            // {
-            //     loadToggle = 0;
-            // }
-            // shouldGo = true;
+            if (state == 1)
+            {
+                intake_hooks.move(-127);
+                pros::delay(10);
+                intake_hooks.move(0);
+                pros::delay(10);
+            }
             if (state != 2)
             {
                 state++;
             }
         }
 
+        // when r2 is pressed, moves wall stake mechanism backward by one state
+        // unless wall stake mechanism is already fully retracted
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
         {
-            // intakeBackward();
-            // pros::delay(10);
-            // intakeStop();
             if (state != 0)
             {
                 state--;
             }
         }
 
+        // extend clamp on press
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
         {
-            master.print(0, 0, "CLAMP ON ");
             clamp.extend();
         }
-        
+
+        // retract clamp on press
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
         {
-            master.print(0, 0, "CLAMP OFF");
             clamp.retract();
         }
 
+        // disable color sort, for matches where colored lighting may mess up detection
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT))
         {
-
-            // rushToggle = !rushToggle;
-            // if (rushToggle)
-            // {
-            //     rush.extend();
-            // }
-            // else
-            // {
-            //     rush.retract();
-            // }
             sort = false;
         }
 
+        // toggle the clamp on the rush arm to grab or release a mobile goal
+        if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
+        {
+
+            rushToggle = !rushToggle;
+            if (rushToggle)
+            {
+                rush.extend();
+            }
+            else
+            {
+                rush.retract();
+            }
+        }
+
+        // quickly pulse the conveyor hooks backward, moving them out of the way
+        // this is necessary for the hooks not to hit the ring when attempting to extend wall stake mechanism
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT))
         {
             intake_hooks.move(-127);
@@ -1002,6 +1004,8 @@ void opcontrol()
             pros::delay(10);
         }
 
+        // only toggles the preroller stage of intake
+        // allows for holding one ring while intaking another
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
         {
             prerollerToggle = !prerollerToggle;
@@ -1015,6 +1019,8 @@ void opcontrol()
                 intake_preroller.move(0);
             }
         }
+
+        // toggle the goal arm
         if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))
         {
             doinkerToggle = !doinkerToggle;

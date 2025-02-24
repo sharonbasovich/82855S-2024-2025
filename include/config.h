@@ -6,7 +6,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // drive motors
-#define IS_RED true
+#define IS_RED false
 
 #define LEFT_FRONT_DRIVE -18
 #define LEFT_MIDDLE_DRIVE -20
@@ -48,7 +48,7 @@
 // color sort
 #define RING_COLOR 2
 //*IN MILLISECONDS* the time that it takes for the ring to reach the top of the hooks from when the color sensor detects it*/
-#define COLOR_TIME 80
+#define COLOR_TIME 120
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 inline pros::Motor left_front_drive(LEFT_FRONT_DRIVE);
