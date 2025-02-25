@@ -226,6 +226,51 @@ bool isRed = IS_RED;
 float hue = -1;
 bool sort = true;
 std::queue<bool> rings;
+int previousRed = 0;
+int currentRed = 0;
+
+void detectChange()
+{
+    while (true)
+    {
+        hue = ring_color.get_hue();
+
+        if (sort)
+        {
+            if ((hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
+            {
+                // detects previous red
+                previousRed = 2;
+            }
+            else if ((hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
+            {
+                // detects previous blue
+                previousRed = 1;
+            }
+            else
+            {
+                previousRed = 0;
+            }
+            pros::delay(100);
+
+            if ((hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
+            {
+                // detects current red
+                currentRed = 2;
+            }
+            else if ((hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
+            {
+                // detects current blue
+                currentRed = 1;
+            }
+            else
+            {
+                currentRed = 0;
+            }
+            pros::delay(100);
+        }
+    }
+}
 
 void colorSort()
 {
@@ -238,13 +283,16 @@ void colorSort()
 
         if (sort)
         {
-            if (((!isRed) && hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
+            if ((hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
             {
-                rings.push(true);
+                // detects red
+                //  rings.push(true);
             }
-            else if ((isRed && hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
+            else if ((hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
             {
-                rings.push(false);
+                // detects blue
+                previousRed = false;
+                // rings.push(false);
             }
             if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
             {
@@ -348,7 +396,7 @@ void wallPID()
     const double tkP = 2.5; //
     const double tkI = 0;   // 00004;//lower the more perscise
     const double tkD = 0.7; // 4larger the stronger the the kD is so response is quicker
-
+    const double kCos = 8.5;
     double terror = 0;
     double tprevious_error = 0;
     double tintegral = 0;
@@ -377,7 +425,9 @@ void wallPID()
         tintegral += terror;
         tderivative = terror - tprevious_error;
         toutput = tkP * terror + tkI * tintegral + tkD * tderivative;
-        wall_motor.move(toutput);
+        wall_motor.move(toutput + cos(((wall_rotation.get_position() / 100) - 40) * 0.017453) * kCos);
+        // wall_motor.move(cos(((wall_rotation.get_position() / 100) - 40) * 0.017453) * kCos);
+
         tprevious_error = terror;
         pros::delay(20);
 
@@ -400,6 +450,10 @@ void initialize()
     // pros::delay(10);
     wall_rotation.set_position(2000);
     pros::delay(10);
+    ring_color.disable_gesture();
+    // pros::delay(10);
+    // ring_color.set_integration_time(20);
+    
     // Initialize button styles for blue
     lv_style_init(&blue_style);
     lv_style_set_bg_color(&blue_style, BLUE_COLOR);
@@ -461,11 +515,14 @@ void initialize()
                            {
         while (true) {
             // print robot location to the brain screen
-            //pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
-            //pros::lcd::print(1, "target: %f", target);
-            //pros::lcd::print(2, "toutput: %f", toutput);
+            // pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
+            // pros::lcd::print(1, "target: %f", target);
+            // pros::lcd::print(2, "toutput: %f", toutput);
             // pros::lcd::print(0, "IMU HEADING: %f", imu.get_heading());
-            pros::lcd::print(0, "hue: %f", ring_color.get_hue());
+            // pros::lcd::print(0, "hue: %f", ring_color.get_hue());
+            // pros::lcd::print(1, "distance: %i", ring_distance.get());
+            // pros::lcd::print(2,"heading: %i", ring_color.get_proximity());
+            pros::lcd::print(0, "stack: %i", rings.front());
             pros::lcd::print(1, "distance: %i", ring_distance.get());
             pros::lcd::print(2,"heading: %i", ring_color.get_proximity());
             // pros::lcd::print(2, "toutput: %f", toutput);
@@ -1055,7 +1112,7 @@ void opcontrol()
 {
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
-    pros::Task sort_task(colorSort);
+    // pros::Task sort_task(colorSort);
     lift.retract();
     pros::delay(10);
 
@@ -1156,7 +1213,7 @@ void opcontrol()
             }
             if (!intake)
             {
-                pros::delay(200);
+                pros::delay(500);
                 intakeForward();
             }
         }
