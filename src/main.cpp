@@ -867,17 +867,22 @@ void autonomous()
 //         pros::delay(25);
 //     }
 // }
-void progSkills() {
+void progSkills()
+{
     // ---------- INITIALIZATION (≈1 s delay) ----------
     // Set initial robot position and retract mechanisms
     chassis.setPose(-58.263, -0.459, 90);
     lift.retract();
     doinker.extend();
     intakeForward();
-    pros::delay(1000);  // Wait 1 sec
+    pros::delay(1000); // Wait 1 sec
 
     // Start wall PID correction asynchronously
     pros::Task wallstake_task(wallPID);
+    pros::delay(10);
+
+    // start ring hold task
+    pros::Task holdring_task(holdRing);
     pros::delay(10);
 
     // ---------- PART 1: MOGO 1 & LADY BROWN (≈26 s worst-case) ----------
@@ -897,7 +902,7 @@ void progSkills() {
     pros::delay(1000);
 
     // Move towards Lady Brown goal and stop intake
-    state += 1;  // Raise Lady Brown mechanism
+    state += 1; // Raise Lady Brown mechanism
     chassis.moveToPose(23, -47, 120, 2000);
     pros::delay(500);
     intakeStop();
@@ -905,7 +910,7 @@ void progSkills() {
     // Move to second ring on MOGO 1
     pros::delay(500);
     intake_preroller.move(127);
-    chassis.moveToPose(-0.153, -58, 240, 2000); 
+    chassis.moveToPose(-0.153, -58, 240, 2000);
     pros::delay(500);
 
     // Move to Lady Brown scoring position and release
@@ -949,9 +954,7 @@ void progSkills() {
     pros::delay(500);
 
     // Move and intake rings on MOGO 2
-    chassis.moveToPose(-0.153, -0.153, 120, 2000);
-    pros::delay(500);
-    chassis.moveToPose(-23, 25, 310, 2000);
+    chassis.moveToPose(-23, 25, 90, 2000);
     pros::delay(500);
     chassis.moveToPose(-23, 47, 0, 2000);
     pros::delay(500);
@@ -977,33 +980,39 @@ void progSkills() {
     state += 1;
     pros::delay(500);
     state -= 2;
-    intakeStop();
     pros::delay(10);
-    intake_preroller.move(127);
-    chassis.moveToPose(23, 23, 120, 2000);
+    hold = true;
     pros::delay(500);
 
-    // Turn to align with MOGO 3
-    chassis.turnToHeading(320, 2000);//(must be turn to heading because turn to point faces forward only)
+    // intake 2 rings and move to Mogo 3
+
+    chassis.turnToPoint(24, 47, 2000); //(Ring 1 mogo 3)
+    pros::delay(250);
+
+    chassis.moveToPose(24, 47, 130, 2000); // ring 1
+
     pros::delay(500);
-    intake_preroller.move(0);
+
+    chassis.moveToPose(24, 23, 180, 2000);
+    pros::delay(500);
+
+    chassis.turnToHeading(320, 2000);
+
+    pros::delay(50);
+
     chassis.moveToPose(47, 0.153, 320, 2000, {.forwards = false, .maxSpeed = 60});
+    pros::delay(250);
     clamp.extend();
-    pros::delay(500);
+    pros::delay(10);
+    hold = false;
     intakeForward();
 
     // Intake rings on MOGO 3
-    chassis.moveToPose(47, 60, 0, 2000);
-    pros::delay(250);
     chassis.moveToPose(47, 59, 0, 2000);
-    pros::delay(500);
-    chassis.moveToPose(59, 47, 130, 2000);
-    pros::delay(500);
-    chassis.moveToPose(23, 47, 270, 2000);
     pros::delay(500);
 
     // Score MOGO 3 in the corner
-    chassis.turnToHeading(270, 2000);
+    chassis.turnToHeading(270, 2000, {.direction = AngularDirection::CW_CLOCKWISE});
     pros::delay(500);
     clamp.retract();
     chassis.moveToPose(65, 64, 270, 2000);
@@ -1011,22 +1020,30 @@ void progSkills() {
 
     // ---------- ALLIANCE STAKE & HANG (≈5 s worst-case) ----------
     // Move to intake rings for alliance stake
-    intakeStop();
+    hold = true;
     pros::delay(10);
-    intake_preroller.move(127);
-    chassis.moveToPose(26, -22, 210, 2000);
+
+    chassis.moveToPose(59, 47, 130, 2000); // intake ring for alliance
     pros::delay(500);
-    intake_preroller.move(0);
-    pros::delay(10);
-    chassis.moveToPose(62, 0.479, 270, 2000);
+
+    chassis.moveToPoint(45, 24, 2000); // move to position for alliance
     pros::delay(500);
+    chassis.moveToPoint(62, 0, 2000); // turn to alliance
+    pros::delay(500);
+    chassis.moveToPose(62, 0, 270, 2000); // go to alliance
+    pros::delay(500);
+
+    hold = false;
     intakeForward();
     pros::delay(500);
+    intakeBackward();
+    chassis.moveToPose(56, -19.2, 350, 2000); // aligh wiht mogo
+    pros::delay(500);
+    chassis.moveToPose(65, -65, 330, 2000); // push mogo in cornor
+    pros::delay(500);
+    state += 2; // initiate hang
+    chassis.moveToPoint(12, -14, 2000);
 }
-
-
-
-
 
 bool intake = false;
 bool outake = false;
