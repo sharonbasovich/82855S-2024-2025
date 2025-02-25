@@ -874,25 +874,25 @@ void progSkills(){
     pros::delay(10);
 
     // Move forward along x-axis to (-47, -0.459)
-    chassis.moveToPoint(-47, -0.459, 1000, {.maxSpeed = 60});
+    chassis.moveToPoint(-47, -0.459, 1000);
     pros::delay(500);
 
     // Mogo 1
-    chassis.moveToPose(-47, -23, 180, 2000, {.forwards = false}); // Move while turning
+    chassis.moveToPose(-47, -23, 180, 2000, {.forwards = false, .maxSpeed = 60}); // Slow down before clamping
     pros::delay(500);
     clamp.extend(); // Clamp Mogo 1
     pros::delay(500);
 
     // Intake Ring 1 on Mogo 1
-    chassis.moveToPoint(-23, -23, 2000, {.maxSpeed = 60});
+    chassis.moveToPoint(-23, -23, 2000);
     pros::delay(1000);
 
     // Turn & move toward Lady Brown 1
-    chassis.moveToPose(-23, -47, 120, 2000, {.maxSpeed = 60});
+    chassis.moveToPose(-23, -47, 120, 2000);
     pros::delay(500);
 
     // Turn & move to Ring 2 Mogo 1
-    chassis.moveToPose(-0.153, -58, 240, 2000, {.maxSpeed = 60});
+    chassis.moveToPose(-0.153, -58, 240, 2000);
     pros::delay(500);
     intakeStop();
     pros::delay(500);
@@ -900,36 +900,37 @@ void progSkills(){
     pros::delay(500);
 
     // Move to scoring position for Lady Brown
-    chassis.moveToPose(-0.153, -69, 180, 2000, {.maxSpeed = 40});
+    chassis.moveToPose(-0.153, -69, 180, 2000);
     pros::delay(500);
     state += 2; // Score Lady Brown
     intake_preroller.move(0);
     pros::delay(500);
 
     // Move to setup position before next scoring
-    chassis.moveToPose(-5.199, -47, 160, 2000, {.forwards = false, .maxSpeed = 60});
+    chassis.moveToPose(-5.199, -47, 160, 2000, {.forwards = false});
     intakeForward();
     pros::delay(500);
 
     // Move to (-58, -47) facing 270° smoothly
-    chassis.moveToPose(-58, -47, 270, 2000, {.forwards = false, .maxSpeed = 60});
+    chassis.moveToPose(-58, -47, 270, 2000, {.forwards = false});
     pros::delay(500);
 
     // Score Ring 6
-    chassis.moveToPose(-47, -58, 145, 2000, {.maxSpeed = 60});
+    chassis.moveToPose(-47, -58, 145, 2000);
     pros::delay(250);
 
     // Score mogo in corner
-    chassis.moveToPose(-65, -64, 45, 2000, {.forwards = false, .maxSpeed = 80});
+    chassis.moveToPose(-65, -64, 45, 2000, {.forwards = false});
 
     //PART 2 Second MOGO
 
-    //aligh for second mogo
-    chassis.moveToPoint(-47,-36, 2000, {.maxSpeed = 80});
-    //turn to face mogo
-    chassis.turnToPoint(-47,23, 2000, {.forwards = false, .maxSpeed = 80});
-    
+    // Align for second mogo
+    chassis.moveToPoint(-47,-36, 2000);
+    // Turn to face mogo efficiently
+    chassis.turnToPoint(-47,23, 2000);
 }
+
+
 bool intake = false;
 bool outake = false;
 bool doinkerToggle = false;
