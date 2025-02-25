@@ -1002,7 +1002,40 @@ void progSkills(){
     pros::delay(250);
 
     //move to ring 4 mogo 3
-    chassis.moveToPose();
+    chassis.moveToPose(47, 59, 0, 2000);
+    pros::delay(500);
+
+    // move to ring 5 mogo 3
+
+    chassis.moveToPose(59, 47, 130, 2000);
+    pros::delay(500);
+
+    // move to ring 6 mogo 3
+    chassis.moveToPose(23, 47, 270, 2000);
+    pros::delay(500);
+
+    // turn and face cornor move
+    chassis.turnToHeading(270, 2000); //face the back
+    pros::delay(500);
+    clamp.retract();
+    chassis.moveToPose(65, 64, 270, 2000);
+    pros::delay(250);
+
+
+    //alliance stake cornor and hang
+    intakeStop();
+    intake_preroller.move(127);
+    chassis.moveToPose(26,-22, 210, 2000);
+    pros::delay(500);
+    intake_preroller.move(0);
+    pros::delay(10);
+    intakeForward();
+    chassis.moveToPose(62, 0.479, 270, 2000);
+    
+    
+
+
+
         
 
 
