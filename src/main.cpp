@@ -854,61 +854,56 @@ void autonomous()
 //         pros::delay(25);
 //     }
 // }
-void progSkills(){
-    //note for move to pose
-    // lead controls how far the carrot point is from the target.
-    // Default value is fine for most cases.
-    // Increase lead (e.g., 0.4) if:
-    // The path feels too tight or jittery (sharp corrections).
-    // Decrease lead (e.g., 0.2) if:
-    // The bot overshoots turns and struggles to align.
-    // Initialize robot's starting position
-        chassis.setPose(-58.263, -0.459, 90);
-        lift.retract();
-        doinker.extend();
-        intakeForward();
-        pros::delay(1000);
+void progSkills() {
+    // ---------- INITIALIZATION (≈1 s delay) ----------
+    // Set initial robot position and retract mechanisms
+    chassis.setPose(-58.263, -0.459, 90);
+    lift.retract();
+    doinker.extend();
+    intakeForward();
+    pros::delay(1000);  // Wait 1 sec
 
     // Start wall PID correction asynchronously
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
 
-    // Drive forward along x-axis to (-47, -0.459)
+    // ---------- PART 1: MOGO 1 & LADY BROWN (≈26 s worst-case) ----------
+    // Move forward along x-axis to (-47, -0.459)
     chassis.moveToPoint(-47, -0.459, 1000);
     pros::delay(500);
 
-    // MOGO 1 Sequence
-    // Approach mogo slowly before clamping
+    // MOGO 1 Sequence:
+    // Approach and clamp MOGO 1
     chassis.moveToPose(-47, -23, 180, 2000, {.forwards = false, .maxSpeed = 60});
     pros::delay(500);
     clamp.extend();  // Clamp MOGO 1
     pros::delay(500);
 
-    // Intake Ring 1 on MOGO 1
+    // Intake first ring on MOGO 1
     chassis.moveToPoint(-23, -23, 2000);
     pros::delay(1000);
 
-    // Move toward Lady Brown 1
-    state += 1;//raise ladyBrown
+    // Move towards Lady Brown goal and stop intake
+    state += 1;  // Raise Lady Brown mechanism
     chassis.moveToPose(23, -47, 120, 2000);
     pros::delay(500);
     intakeStop();
-    
-    // Move to Ring 2 on MOGO 1
+
+    // Move to second ring on MOGO 1
     pros::delay(500);
     intake_preroller.move(127);
-    // Intake Ring 2 on MOGO 1
     chassis.moveToPose(-0.153, -58, 240, 2000); 
-    pros::delay(500);   
-    // Drive to scoring position for Lady Brown
+    pros::delay(500);
+
+    // Move to Lady Brown scoring position and release
     chassis.moveToPose(-0.153, -69, 180, 2000);
     pros::delay(500);
     state += 1;  // Score Lady Brown
     intake_preroller.move(0);
     pros::delay(500);
 
-    // Move to setup position before next scoring
-    state -= 2;// Lady brown retract
+    // Reset Lady Brown mechanism and move to next position
+    state -= 2;
     chassis.moveToPose(-5.199, -47, 160, 2000, {.forwards = false});
     intakeForward();
     pros::delay(500);
@@ -921,125 +916,101 @@ void progSkills(){
     chassis.moveToPose(-47, -58, 145, 2000);
     pros::delay(250);
 
-    // Score mogo in corner
+    // Score mogo in the corner
     clamp.retract();
     chassis.moveToPose(-65, -64, 45, 2000, {.forwards = false});
 
-    // --- PART 2: Second MOGO ---
-    // Strategy:
-    // - Use turnToPoint for in-place turning when the position is set.
-    // - Use moveToPose for combined position and orientation correction.
-    // - For significant heading errors, a preliminary turnToPoint can help.
-
-    // Align for second mogo
+    // ---------- PART 2: SECOND MOGO (=25 s worst-case) ----------
+    // Move towards second mogo
     chassis.moveToPoint(-47, -36, 2000);
 
-    // Turn to face mogo efficiently (face back side for clamping)
-    chassis.turnToPoint(-47, 13, 2000, {.forwards = false});//might have to change to heading becasue we have to use our back
-
-    // Move close to mogo 2
+    // Turn to align with MOGO 2 using the back clamp
+    chassis.turnToPoint(-47, 13, 2000, {.forwards = false});
     chassis.moveToPose(-47, 13, 180, 2000, {.forwards = false});
     pros::delay(1000);
 
-    // Approach mogo 2 slowly
+    // Approach and clamp MOGO 2
     chassis.moveToPoint(-47, 23, 2000, {.forwards = false, .maxSpeed = 60});
     pros::delay(500);
     clamp.extend();
     pros::delay(500);
 
-    // MOGO 2 Ring Intake Sequence
-    // Move to center (Ring 1 on MOGO 2)
+    // Move and intake rings on MOGO 2
     chassis.moveToPose(-0.153, -0.153, 120, 2000);
     pros::delay(500);
-
-    // Move to Ring 2 on MOGO 2
     chassis.moveToPose(-23, 25, 310, 2000);
     pros::delay(500);
-
-    // Move to Ring 3 on MOGO 2
     chassis.moveToPose(-23, 47, 0, 2000);
     pros::delay(500);
-
-    // Move to Rings 4 & 5 on MOGO 2
     chassis.moveToPose(-58, 47, 270, 2000);
     pros::delay(500);
-
-    // Move to Ring 6 on MOGO 2
     chassis.moveToPose(-47, 58, 45, 2000);
     pros::delay(500);
 
-    // Score MOGO 2 in corner
+    // Score MOGO 2 in the corner
     clamp.retract();
     chassis.moveToPose(-64, 64, 120, 2000);
     pros::delay(500);
 
-    // --- mogo 3 ----
-    //ladybrown 2 ring 1
+    // ---------- PART 3: MOGO 3 & LADY BROWN (≈27 s worst-case) ----------
+    // Move to MOGO 3 and prepare for Lady Brown
     chassis.moveToPose(-40, 58, 90, 2000);
     state += 1;
     pros::delay(500);
-    chassis.moveToPose(- 0.153, 59, 0, 2000);//lighup bot for lady brown
+
+    // Line up for Lady Brown and score
+    chassis.moveToPose(-0.153, 59, 0, 2000);
     pros::delay(500);
-    state += 1;//score lady brown
+    state += 1;
     pros::delay(500);
-    state -= 2;//retract
+    state -= 2;
     intakeStop();
     pros::delay(10);
     intake_preroller.move(127);
-    chassis.moveToPose(23, 23, 120, 2000);//move to ring 1
+    chassis.moveToPose(23, 23, 120, 2000);
     pros::delay(500);
 
-    chassis.turnToHeading(320, 2000);//turn to face back of the robot
+    // Turn to align with MOGO 3
+    chassis.turnToHeading(320, 2000);//(must be turn to heading because turn to point faces forward only)
     pros::delay(500);
     intake_preroller.move(0);
-    chassis.moveToPose(47, 0.153, 320, 2000, {.forwards = false, .maxSpeed = 60});//move to mogo
+    chassis.moveToPose(47, 0.153, 320, 2000, {.forwards = false, .maxSpeed = 60});
     clamp.extend();
     pros::delay(500);
     intakeForward();
-    
-    //move to ring 2 and 3 for mogo 3
-    chassis.moveToPose(47,60, 0, 2000);
-    pros::delay(250);
 
-    //move to ring 4 mogo 3
+    // Intake rings on MOGO 3
+    chassis.moveToPose(47, 60, 0, 2000);
+    pros::delay(250);
     chassis.moveToPose(47, 59, 0, 2000);
     pros::delay(500);
-
-    // move to ring 5 mogo 3
-
     chassis.moveToPose(59, 47, 130, 2000);
     pros::delay(500);
-
-    // move to ring 6 mogo 3
     chassis.moveToPose(23, 47, 270, 2000);
     pros::delay(500);
 
-    // turn and face cornor move
-    chassis.turnToHeading(270, 2000); //face the back
+    // Score MOGO 3 in the corner
+    chassis.turnToHeading(270, 2000);
     pros::delay(500);
     clamp.retract();
     chassis.moveToPose(65, 64, 270, 2000);
     pros::delay(250);
 
-
-    //alliance stake cornor and hang
+    // ---------- ALLIANCE STAKE & HANG (≈5 s worst-case) ----------
+    // Move to intake rings for alliance stake
     intakeStop();
+    pros::delay(10);
     intake_preroller.move(127);
-    chassis.moveToPose(26,-22, 210, 2000);
+    chassis.moveToPose(26, -22, 210, 2000);
     pros::delay(500);
     intake_preroller.move(0);
     pros::delay(10);
-    intakeForward();
     chassis.moveToPose(62, 0.479, 270, 2000);
-    
-    
-
-
-
-        
-
-
+    pros::delay(500);
+    intakeForward();
+    pros::delay(500);
 }
+
 
 
 
