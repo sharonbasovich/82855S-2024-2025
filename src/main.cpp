@@ -464,10 +464,10 @@ void initialize()
             //pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
             //pros::lcd::print(1, "target: %f", target);
             //pros::lcd::print(2, "toutput: %f", toutput);
-            pros::lcd::print(0, "IMU HEADING: %f", imu.get_heading());
-            // pros::lcd::print(0, "hue: %f", ring_color.get_hue());
-            // pros::lcd::print(1, "distance: %i", ring_distance.get());
-            // pros::lcd::print(2,"heading: %f", imu.get_heading());
+            // pros::lcd::print(0, "IMU HEADING: %f", imu.get_heading());
+            pros::lcd::print(0, "hue: %f", ring_color.get_hue());
+            pros::lcd::print(1, "distance: %i", ring_distance.get());
+            pros::lcd::print(2,"heading: %i", ring_color.get_proximity());
             // pros::lcd::print(2, "toutput: %f", toutput);
 
             // delay to save resources
@@ -1038,7 +1038,7 @@ void opcontrol()
 {
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
-    // pros::Task sort_task(colorSort);
+    pros::Task sort_task(colorSort);
     lift.retract();
     pros::delay(10);
 
