@@ -329,12 +329,12 @@ double wallAngle;
 void wallPID()
 {
     double bottom = 20;
-    double load = 47;
+    double load = 60;
     double score = 160;
 
-    const double tkP = 1.5;
+    const double tkP = 2.5; //
     const double tkI = 0;   // 00004;//lower the more perscise
-    const double tkD = 0.5; // 4larger the stronger the the kD is so response is quicker
+    const double tkD = 0.7; // 4larger the stronger the the kD is so response is quicker
 
     double terror = 0;
     double tprevious_error = 0;
@@ -451,6 +451,7 @@ void initialize()
             pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
             pros::lcd::print(1, "target: %f", target);
             pros::lcd::print(2, "toutput: %f", toutput);
+            pros::lcd::print(3, "IMU HEADING: %f", imu.get_heading());
             // pros::lcd::print(0, "hue: %f", ring_color.get_hue());
             // pros::lcd::print(1, "distance: %i", ring_distance.get());
             // pros::lcd::print(2,"heading: %f", imu.get_heading());
