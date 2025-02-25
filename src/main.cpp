@@ -448,10 +448,10 @@ void initialize()
                            {
         while (true) {
             // print robot location to the brain screen
-            pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
-            pros::lcd::print(1, "target: %f", target);
-            pros::lcd::print(2, "toutput: %f", toutput);
-            pros::lcd::print(3, "IMU HEADING: %f", imu.get_heading());
+            //pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
+            //pros::lcd::print(1, "target: %f", target);
+            //pros::lcd::print(2, "toutput: %f", toutput);
+            pros::lcd::print(0, "IMU HEADING: %f", imu.get_heading());
             // pros::lcd::print(0, "hue: %f", ring_color.get_hue());
             // pros::lcd::print(1, "distance: %i", ring_distance.get());
             // pros::lcd::print(2,"heading: %f", imu.get_heading());
@@ -854,7 +854,82 @@ void autonomous()
 //         pros::delay(25);
 //     }
 // }
+void progSkills(){
+    //note for move to pose
+// lead controls how far the carrot point is from the target.
+// Default value is fine for most cases.
+// Increase lead (e.g., 0.4) if:
+// The path feels too tight or jittery (sharp corrections).
+// Decrease lead (e.g., 0.2) if:
+// The bot overshoots turns and struggles to align.
+// Initialize robot's starting position
+    chassis.setPose(-58.263, -0.459, 90);
+    lift.retract();
+    doinker.extend();
+    intakeForward();
+    pros::delay(1000);
 
+    // Start wall PID correction asynchronously
+    pros::Task wallstake_task(wallPID);
+    pros::delay(10);
+
+    // Move forward along x-axis to (-47, -0.459)
+    chassis.moveToPoint(-47, -0.459, 1000, {.maxSpeed = 60});
+    pros::delay(500);
+
+    // Mogo 1
+    chassis.moveToPose(-47, -23, 180, 2000, {.forwards = false}); // Move while turning
+    pros::delay(500);
+    clamp.extend(); // Clamp Mogo 1
+    pros::delay(500);
+
+    // Intake Ring 1 on Mogo 1
+    chassis.moveToPoint(-23, -23, 2000, {.maxSpeed = 60});
+    pros::delay(1000);
+
+    // Turn & move toward Lady Brown 1
+    chassis.moveToPose(-23, -47, 120, 2000, {.maxSpeed = 60});
+    pros::delay(500);
+
+    // Turn & move to Ring 2 Mogo 1
+    chassis.moveToPose(-0.153, -58, 240, 2000, {.maxSpeed = 60});
+    pros::delay(500);
+    intakeStop();
+    pros::delay(500);
+    intake_preroller.move(127); // Intake Ring 2 Mogo 1
+    pros::delay(500);
+
+    // Move to scoring position for Lady Brown
+    chassis.moveToPose(-0.153, -69, 180, 2000, {.maxSpeed = 40});
+    pros::delay(500);
+    state += 2; // Score Lady Brown
+    intake_preroller.move(0);
+    pros::delay(500);
+
+    // Move to setup position before next scoring
+    chassis.moveToPose(-5.199, -47, 160, 2000, {.forwards = false, .maxSpeed = 60});
+    intakeForward();
+    pros::delay(500);
+
+    // Move to (-58, -47) facing 270° smoothly
+    chassis.moveToPose(-58, -47, 270, 2000, {.forwards = false, .maxSpeed = 60});
+    pros::delay(500);
+
+    // Score Ring 6
+    chassis.moveToPose(-47, -58, 145, 2000, {.maxSpeed = 60});
+    pros::delay(250);
+
+    // Score mogo in corner
+    chassis.moveToPose(-65, -64, 45, 2000, {.forwards = false, .maxSpeed = 80});
+
+    //PART 2 Second MOGO
+
+    //aligh for second mogo
+    chassis.moveToPoint(-47,-36, 2000, {.maxSpeed = 80});
+    //turn to face mogo
+    chassis.turnToPoint(-47,23, 2000, {.forwards = false, .maxSpeed = 80});
+    
+}
 bool intake = false;
 bool outake = false;
 bool doinkerToggle = false;
