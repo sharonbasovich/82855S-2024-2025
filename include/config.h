@@ -6,7 +6,7 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // drive motors
-#define IS_RED false
+#define IS_RED true
 
 #define LEFT_FRONT_DRIVE -18
 #define LEFT_MIDDLE_DRIVE -20
@@ -44,6 +44,7 @@
 #define RING_DISTANCE 7
 //**IN MILLIMETERS** the value that the ring must be closer than to be detected
 #define RING_DISTANCE_THRESHOLD 30
+#define RING_PROXIMITY 180
 
 // color sort
 #define RING_COLOR 2

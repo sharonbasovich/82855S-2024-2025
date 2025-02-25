@@ -8,6 +8,7 @@
 #include "config.h"
 #include "liblvgl/lvgl.h"
 #include "selector.hpp"
+#include <queue>
 
 int loadToggle = 0;
 double target = 0;
@@ -224,6 +225,7 @@ void holdRing()
 bool isRed = IS_RED;
 float hue = -1;
 bool sort = true;
+std::queue<bool> rings;
 
 void colorSort()
 {
@@ -233,24 +235,35 @@ void colorSort()
     while (true)
     {
         hue = ring_color.get_hue();
-        if (sort && (ring_distance.get() < RING_DISTANCE_THRESHOLD))
+
+        if (sort)
         {
-            if ((!isRed) && hue < 30)
+            if (((!isRed) && hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
             {
-                pros::delay(COLOR_TIME);
-                intakeBackward();
-                pros::delay(150);
-                intakeForward();
+                rings.push(true);
             }
-            else if (isRed && hue > 100)
+            else if ((isRed && hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
             {
-                pros::delay(COLOR_TIME);
-                intakeBackward();
-                pros::delay(150);
-                intakeForward();
+                rings.push(false);
             }
+            if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+            {
+                if (!rings.empty())
+                {
+                    if (rings.front())
+                    {
+                        // sort
+                        pros::delay(COLOR_TIME);
+                        intakeBackward();
+                        pros::delay(150);
+                        intakeForward();
+                        rings.pop();
+                    }
+                    pros::delay(500);
+                }
+            }
+            pros::delay(10);
         }
-        pros::delay(10);
     }
 }
 
@@ -329,7 +342,7 @@ double wallAngle;
 void wallPID()
 {
     double bottom = 20;
-    double load = 60;
+    double load = 53;
     double score = 160;
 
     const double tkP = 2.5; //
@@ -854,20 +867,21 @@ void autonomous()
 //         pros::delay(25);
 //     }
 // }
-void progSkills(){
-    //note for move to pose
-    // lead controls how far the carrot point is from the target.
-    // Default value is fine for most cases.
-    // Increase lead (e.g., 0.4) if:
-    // The path feels too tight or jittery (sharp corrections).
-    // Decrease lead (e.g., 0.2) if:
-    // The bot overshoots turns and struggles to align.
-    // Initialize robot's starting position
-        chassis.setPose(-58.263, -0.459, 90);
-        lift.retract();
-        doinker.extend();
-        intakeForward();
-        pros::delay(1000);
+void progSkills()
+{
+    // note for move to pose
+    //  lead controls how far the carrot point is from the target.
+    //  Default value is fine for most cases.
+    //  Increase lead (e.g., 0.4) if:
+    //  The path feels too tight or jittery (sharp corrections).
+    //  Decrease lead (e.g., 0.2) if:
+    //  The bot overshoots turns and struggles to align.
+    //  Initialize robot's starting position
+    chassis.setPose(-58.263, -0.459, 90);
+    lift.retract();
+    doinker.extend();
+    intakeForward();
+    pros::delay(1000);
 
     // Start wall PID correction asynchronously
     pros::Task wallstake_task(wallPID);
@@ -881,7 +895,7 @@ void progSkills(){
     // Approach mogo slowly before clamping
     chassis.moveToPose(-47, -23, 180, 2000, {.forwards = false, .maxSpeed = 60});
     pros::delay(500);
-    clamp.extend();  // Clamp MOGO 1
+    clamp.extend(); // Clamp MOGO 1
     pros::delay(500);
 
     // Intake Ring 1 on MOGO 1
@@ -889,26 +903,26 @@ void progSkills(){
     pros::delay(1000);
 
     // Move toward Lady Brown 1
-    state += 1;//raise ladyBrown
+    state += 1; // raise ladyBrown
     chassis.moveToPose(23, -47, 120, 2000);
     pros::delay(500);
     intakeStop();
-    
+
     // Move to Ring 2 on MOGO 1
     pros::delay(500);
     intake_preroller.move(127);
     // Intake Ring 2 on MOGO 1
-    chassis.moveToPose(-0.153, -58, 240, 2000); 
-    pros::delay(500);   
+    chassis.moveToPose(-0.153, -58, 240, 2000);
+    pros::delay(500);
     // Drive to scoring position for Lady Brown
     chassis.moveToPose(-0.153, -69, 180, 2000);
     pros::delay(500);
-    state += 1;  // Score Lady Brown
+    state += 1; // Score Lady Brown
     intake_preroller.move(0);
     pros::delay(500);
 
     // Move to setup position before next scoring
-    state -= 2;// Lady brown retract
+    state -= 2; // Lady brown retract
     chassis.moveToPose(-5.199, -47, 160, 2000, {.forwards = false});
     intakeForward();
     pros::delay(500);
@@ -935,7 +949,7 @@ void progSkills(){
     chassis.moveToPoint(-47, -36, 2000);
 
     // Turn to face mogo efficiently (face back side for clamping)
-    chassis.turnToPoint(-47, 13, 2000, {.forwards = false});//might have to change to heading becasue we have to use our back
+    chassis.turnToPoint(-47, 13, 2000, {.forwards = false}); // might have to change to heading becasue we have to use our back
 
     // Move close to mogo 2
     chassis.moveToPose(-47, 13, 180, 2000, {.forwards = false});
@@ -974,42 +988,36 @@ void progSkills(){
     pros::delay(500);
 
     // --- mogo 3 ----
-    //ladybrown 2 ring 1
+    // ladybrown 2 ring 1
     chassis.moveToPose(-40, 58, 90, 2000);
     state += 1;
     pros::delay(500);
-    chassis.moveToPose(- 0.153, 59, 0, 2000);//lighup bot for lady brown
+    chassis.moveToPose(-0.153, 59, 0, 2000); // lighup bot for lady brown
     pros::delay(500);
-    state += 1;//score lady brown
+    state += 1; // score lady brown
     pros::delay(500);
-    state -= 2;//retract
+    state -= 2; // retract
     intakeStop();
     pros::delay(10);
     intake_preroller.move(127);
-    chassis.moveToPose(23, 23, 120, 2000);//move to ring 1
+    chassis.moveToPose(23, 23, 120, 2000); // move to ring 1
     pros::delay(500);
 
-    chassis.turnToHeading(320, 2000);//turn to face back of the robot
+    chassis.turnToHeading(320, 2000); // turn to face back of the robot
     pros::delay(500);
     intake_preroller.move(0);
-    chassis.moveToPose(47, 0.153, 320, 2000, {.forwards = false, .maxSpeed = 60});//move to mogo
+    chassis.moveToPose(47, 0.153, 320, 2000, {.forwards = false, .maxSpeed = 60}); // move to mogo
     clamp.extend();
     pros::delay(500);
     intakeForward();
-    
-    //move to ring 2 and 3 for mogo 3
-    chassis.moveToPose(47,60, 0, 2000);
+
+    // move to ring 2 and 3 for mogo 3
+    chassis.moveToPose(47, 60, 0, 2000);
     pros::delay(250);
 
-    //move to ring 4 mogo 3
-    chassis.moveToPose();
-        
-
-
+    // move to ring 4 mogo 3
+    //  chassis.moveToPose();
 }
-
-
-
 
 bool intake = false;
 bool outake = false;
@@ -1021,7 +1029,7 @@ void opcontrol()
 {
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
-    pros::Task sort_task(colorSort);
+    // pros::Task sort_task(colorSort);
     lift.retract();
     pros::delay(10);
 
@@ -1101,6 +1109,10 @@ void opcontrol()
                 pros::delay(10);
                 intake_hooks.move(0);
                 pros::delay(10);
+                if (intake)
+                {
+                    intake = false;
+                }
             }
             if (state != 2)
             {
@@ -1115,6 +1127,11 @@ void opcontrol()
             if (state != 0)
             {
                 state--;
+            }
+            if (!intake)
+            {
+                pros::delay(200);
+                intakeForward();
             }
         }
 
