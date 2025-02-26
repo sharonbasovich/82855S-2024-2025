@@ -10,110 +10,134 @@
 #include "selector.hpp"
 #include <queue>
 
+#pragma once
+#include "pros/imu.hpp"
+#include <cmath>
+
+class MockIMU : public pros::Imu
+{
+public:
+    MockIMU(int port, double gain)
+        : pros::Imu(port), imu_gain(gain) {}
+
+    double get_rotation() const override
+    {
+        double raw = pros::Imu::get_rotation();
+        if (raw == PROS_ERR_F)
+            return NAN;
+        return raw * imu_gain;
+    }
+
+private:
+    double imu_gain;
+};
+
+MockIMU imu(IMU, 360.0 / 363.0);
+
 int loadToggle = 0;
 double target = 0;
 double toutput = 0;
 bool shouldGo = false;
 int state = 0;
 
-// Structure to hold button label and color information
-typedef struct
-{
-    const char *label; // Button name
-    bool is_red;       // Flag to determine button color (true for red, false for blue)
-} button_info_t;
+// // Structure to hold button label and color information
+// typedef struct
+// {
+//     const char *label; // Button name
+//     bool is_red;       // Flag to determine button color (true for red, false for blue)
+// } button_info_t;
 
-// Array of button labels and their colors
-// True makes the button red, and false makes it blue
-button_info_t button_info[] = {
-    {PN1, PC1},
-    {PN2, PC2},
-    {PN3, PC3},
-    {PN4, PC4},
-    {PN5, PC5},
-    {PN6, PC6}};
+// // Array of button labels and their colors
+// // True makes the button red, and false makes it blue
+// button_info_t button_info[] = {
+//     {PN1, PC1},
+//     {PN2, PC2},
+//     {PN3, PC3},
+//     {PN4, PC4},
+//     {PN5, PC5},
+//     {PN6, PC6}};
 
-// the number of buttons to be created based on the array above
-#define NUM_BUTTONS (sizeof(button_info) / sizeof(button_info[0]))
+// // the number of buttons to be created based on the array above
+// #define NUM_BUTTONS (sizeof(button_info) / sizeof(button_info[0]))
 
-static lv_obj_t *readout_label;
+// static lv_obj_t *readout_label;
 
-// The brain screen is 480 by 272 pixels
-// Size of the button
-int button_x = BUTTON_X;
-int button_y = BUTTON_Y;
+// // The brain screen is 480 by 272 pixels
+// // Size of the button
+// int button_x = BUTTON_X;
+// int button_y = BUTTON_Y;
 
-lv_coord_t x_start = X_START;            // Starting x-coordinate for buttons
-lv_coord_t y_start = Y_START;            // Starting y-coordinate for buttons
-lv_coord_t x_offset = button_x + OFFSET; // Horizontal offset between buttons
-lv_coord_t y_offset = button_y + OFFSET; // Vertical offset between buttons
-lv_coord_t num_columns = NUM_COLUMNS;    // Number of columns in the grid
+// lv_coord_t x_start = X_START;            // Starting x-coordinate for buttons
+// lv_coord_t y_start = Y_START;            // Starting y-coordinate for buttons
+// lv_coord_t x_offset = button_x + OFFSET; // Horizontal offset between buttons
+// lv_coord_t y_offset = button_y + OFFSET; // Vertical offset between buttons
+// lv_coord_t num_columns = NUM_COLUMNS;    // Number of columns in the grid
 
-// Button color definitions
-#define BLUE_COLOR lv_color_hex(0x0000FF)
-#define RED_COLOR lv_color_hex(0xFF0000)
-lv_style_t blue_style;
-lv_style_t red_style;
+// // Button color definitions
+// #define BLUE_COLOR lv_color_hex(0x0000FF)
+// #define RED_COLOR lv_color_hex(0xFF0000)
+// lv_style_t blue_style;
+// lv_style_t red_style;
 
-// Callback function for button events
-static void btn_event_cb(lv_event_t *e)
-{
-    // Check if the button was pressed
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED)
-    {
-        // Retrieve the value associated with the button
-        int value = (intptr_t)lv_obj_get_user_data(lv_event_get_target(e));
+// // Callback function for button events
+// static void btn_event_cb(lv_event_t *e)
+// {
+//     // Check if the button was pressed
+//     lv_event_code_t code = lv_event_get_code(e);
+//     if (code == LV_EVENT_CLICKED)
+//     {
+//         // Retrieve the value associated with the button
+//         int value = (intptr_t)lv_obj_get_user_data(lv_event_get_target(e));
 
-        // Determine the color of the button from the array
-        const char *color = button_info[value - 1].is_red ? "Red" : "Blue";
+//         // Determine the color of the button from the array
+//         const char *color = button_info[value - 1].is_red ? "Red" : "Blue";
 
-        // Update the readout with the new value and color
-        lv_label_set_text_fmt(readout_label, "Auto: %s     Color: %s", button_info[value - 1].label, color);
-    }
-}
+//         // Update the readout with the new value and color
+//         lv_label_set_text_fmt(readout_label, "Auto: %s     Color: %s", button_info[value - 1].label, color);
+//     }
+// }
 
-// Function to abstract the creation of the button
-lv_obj_t *create_button(lv_obj_t *parent, const char *text, lv_coord_t x, lv_coord_t y, int value, bool is_red)
-{
-    lv_obj_t *btn = lv_btn_create(parent);      // Create the button
-    lv_obj_set_size(btn, button_x, button_y);   // Set button size
-    lv_obj_align(btn, LV_ALIGN_TOP_LEFT, x, y); // Position the button
+// // Function to abstract the creation of the button
+// lv_obj_t *create_button(lv_obj_t *parent, const char *text, lv_coord_t x, lv_coord_t y, int value, bool is_red)
+// {
+//     lv_obj_t *btn = lv_btn_create(parent);      // Create the button
+//     lv_obj_set_size(btn, button_x, button_y);   // Set button size
+//     lv_obj_align(btn, LV_ALIGN_TOP_LEFT, x, y); // Position the button
 
-    // Create a label for the button text
-    lv_obj_t *label = lv_label_create(btn);
-    lv_label_set_text(label, text);
+//     // Create a label for the button text
+//     lv_obj_t *label = lv_label_create(btn);
+//     lv_label_set_text(label, text);
 
-    // Set the label alignment to left
-    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_LEFT, 0);
-    // Remove any padding on the left of the button to optimize space
-    lv_obj_set_style_pad_left(btn, 3, 0);
+//     // Set the label alignment to left
+//     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_LEFT, 0);
+//     // Remove any padding on the left of the button to optimize space
+//     lv_obj_set_style_pad_left(btn, 3, 0);
 
-    // Set the button color based on the `is_red` flag from the array
-    if (is_red)
-    {
-        lv_obj_add_style(btn, &red_style, 0);
-    }
-    else
-    {
-        lv_obj_add_style(btn, &blue_style, 0);
-    }
+//     // Set the button color based on the `is_red` flag from the array
+//     if (is_red)
+//     {
+//         lv_obj_add_style(btn, &red_style, 0);
+//     }
+//     else
+//     {
+//         lv_obj_add_style(btn, &blue_style, 0);
+//     }
 
-    // Set the value of the button
-    lv_obj_set_user_data(btn, (void *)(intptr_t)value);
+//     // Set the value of the button
+//     lv_obj_set_user_data(btn, (void *)(intptr_t)value);
 
-    // Attach the event callback
-    lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_CLICKED, NULL);
-    return btn;
-}
+//     // Attach the event callback
+//     lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_CLICKED, NULL);
+//     return btn;
+// }
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_mg,                   // left motor group
                               &right_mg,                  // right motor group
-                              10.5,                       // 12 inch track width
+                              10.4,                       // 12 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
                               450,                        // drivetrain rpm is 450
-                              2                           // horizontal drift is 2 (for now)
+                              0                           // horizontal drift is 2 (for now)
 );
 
 lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_odom, lemlib::Omniwheel::NEW_2, -3.25);
@@ -132,7 +156,7 @@ lemlib::OdomSensors sensors(
 // lateral PID controller
 lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
                                               0,  // integral gain (kI)
-                                              38, // derivative gain (kD)
+                                              0,  // derivative gain (kD)
                                               0,  // anti windup
                                               0,  // small error range, in inches
                                               0,  // small error range timeout, in milliseconds
@@ -142,9 +166,9 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(6,  // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(3,  // proportional gain (kP)
                                               0,  // integral gain (kI)
-                                              46, // derivative gain (kD)
+                                              25, // derivative gain (kD)
                                               0,  // anti windup
                                               0,  // small error range, in inches
                                               0,  // small error range timeout, in milliseconds
@@ -228,37 +252,58 @@ bool sort = true;
 std::queue<bool> rings;
 int previousRed = 0;
 int currentRed = 0;
+bool hasCurrent = false;
+bool hasPrevious = false;
+int proximity = 0;
 
 void detectChange()
 {
+    pros::delay(10);
     while (true)
     {
         hue = ring_color.get_hue();
+        proximity = ring_color.get_proximity();
 
         if (sort)
         {
-            if ((hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
+            if ((hue < 30) && (proximity > RING_PROXIMITY))
             {
                 // detects previous red
                 previousRed = 2;
             }
-            else if ((hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
+            else if ((hue > 100) && (proximity > RING_PROXIMITY))
             {
                 // detects previous blue
                 previousRed = 1;
+                pros::delay(200);
+                intakeBackward();
+                pros::delay(200);
+                intakeForward();
             }
             else
             {
                 previousRed = 0;
             }
-            pros::delay(100);
 
-            if ((hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
+            if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+            {
+                hasPrevious = true;
+            }
+            else
+            {
+                hasPrevious = false;
+            }
+            pros::delay(10);
+
+            hue = ring_color.get_hue();
+            proximity = ring_color.get_proximity();
+
+            if ((hue < 30) && (proximity > RING_PROXIMITY))
             {
                 // detects current red
                 currentRed = 2;
             }
-            else if ((hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
+            else if ((hue > 100) && (proximity > RING_PROXIMITY))
             {
                 // detects current blue
                 currentRed = 1;
@@ -267,10 +312,22 @@ void detectChange()
             {
                 currentRed = 0;
             }
-            pros::delay(100);
+
+            if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+            {
+                hasCurrent = true;
+            }
+            else
+            {
+                hasCurrent = false;
+            }
+            pros::delay(10);
         }
     }
 }
+
+bool gotBlue = true;
+bool gotRed = false;
 
 void colorSort()
 {
@@ -279,36 +336,50 @@ void colorSort()
     pros::delay(10);
     while (true)
     {
-        hue = ring_color.get_hue();
 
         if (sort)
         {
-            if ((hue < 30) && (ring_color.get_proximity() > RING_PROXIMITY))
+            if ((previousRed == 1) && (currentRed == 2))
             {
-                // detects red
-                //  rings.push(true);
+                gotRed = true;
             }
-            else if ((hue > 100) && (ring_color.get_proximity() > RING_PROXIMITY))
+            else if ((previousRed == 0) && (currentRed == 2))
             {
-                // detects blue
-                previousRed = false;
-                // rings.push(false);
+                gotRed = true;
             }
-            if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+            else if ((previousRed == 2) && (currentRed == 1))
             {
-                if (!rings.empty())
+                gotBlue = true;
+            }
+            else if ((previousRed == 0) && (currentRed == 1))
+            {
+                gotBlue = true;
+            }
+
+            if (hasCurrent && (!hasPrevious))
+            {
+                // if (!rings.empty())
+                // {
+                //     if (rings.front())
+                //     {
+                //         // sort
+                //         pros::delay(COLOR_TIME);
+                //         intakeBackward();
+                //         pros::delay(200);
+                //         intakeForward();
+                //     }
+                //     rings.pop();
+                // }
+
+                if (gotBlue)
                 {
-                    if (rings.front())
-                    {
-                        // sort
-                        pros::delay(COLOR_TIME);
-                        intakeBackward();
-                        pros::delay(150);
-                        intakeForward();
-                        rings.pop();
-                    }
-                    pros::delay(500);
+                    // pros::delay(50);
+                    // intakeBackward();
+                    // pros::delay(400);
+                    // intakeForward();
+                    gotBlue = false;
                 }
+
             }
             pros::delay(10);
         }
@@ -395,7 +466,7 @@ void wallPID()
 
     const double tkP = 2.5; //
     const double tkI = 0;   // 00004;//lower the more perscise
-    const double tkD = 0.7; // 4larger the stronger the the kD is so response is quicker
+    const double tkD = 5.7; // 4larger the stronger the the kD is so response is quicker
     const double kCos = 8.5;
     double terror = 0;
     double tprevious_error = 0;
@@ -426,8 +497,8 @@ void wallPID()
         tderivative = terror - tprevious_error;
         toutput = tkP * terror + tkI * tintegral + tkD * tderivative;
         wall_motor.move(toutput + cos(((wall_rotation.get_position() / 100) - 40) * 0.017453) * kCos);
-        // wall_motor.move(cos(((wall_rotation.get_position() / 100) - 40) * 0.017453) * kCos);
-
+        //  wall_motor.move(cos(((wall_rotation.get_position() / 100) - 40) * 0.017453) * kCos);
+        // wall_motor.move(toutput);
         tprevious_error = terror;
         pros::delay(20);
 
@@ -453,51 +524,51 @@ void initialize()
     ring_color.disable_gesture();
     // pros::delay(10);
     // ring_color.set_integration_time(20);
-    
-    // Initialize button styles for blue
-    lv_style_init(&blue_style);
-    lv_style_set_bg_color(&blue_style, BLUE_COLOR);
 
-    // Initialize button styles for red
-    lv_style_init(&red_style);
-    lv_style_set_bg_color(&red_style, RED_COLOR);
+    // // Initialize button styles for blue
+    // lv_style_init(&blue_style);
+    // lv_style_set_bg_color(&blue_style, BLUE_COLOR);
 
-    // Create the readout that displays which program is selected
-    readout_label = lv_label_create(lv_scr_act());
+    // // Initialize button styles for red
+    // lv_style_init(&red_style);
+    // lv_style_set_bg_color(&red_style, RED_COLOR);
 
-    // Indicate that no program has been selected yet
-    lv_label_set_text(readout_label, "Auto: NONE");
+    // // Create the readout that displays which program is selected
+    // readout_label = lv_label_create(lv_scr_act());
 
-    // Position the readout
-    lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
+    // // Indicate that no program has been selected yet
+    // lv_label_set_text(readout_label, "Auto: NONE");
 
-    // Create buttons in a grid pattern
-    int button_count = 0;
-    for (int row = 0; row < 5; row++)
-    {
-        for (int col = 0; col < num_columns; col++)
-        {
-            // Stop if all the buttons are created
-            if (button_count >= NUM_BUTTONS)
-            {
-                break;
-            }
+    // // Position the readout
+    // lv_obj_align(readout_label, LV_ALIGN_TOP_LEFT, 10, 10);
 
-            lv_coord_t x = x_start + col * x_offset; // Calculate x position
-            lv_coord_t y = y_start + row * y_offset; // Calculate y position
+    // // Create buttons in a grid pattern
+    // int button_count = 0;
+    // for (int row = 0; row < 5; row++)
+    // {
+    //     for (int col = 0; col < num_columns; col++)
+    //     {
+    //         // Stop if all the buttons are created
+    //         if (button_count >= NUM_BUTTONS)
+    //         {
+    //             break;
+    //         }
 
-            // Get label text and color info from the 2D array
-            const char *label_text = button_info[button_count].label;
-            bool is_red = button_info[button_count].is_red;
-            int button_value = (button_count + 1);
+    //         lv_coord_t x = x_start + col * x_offset; // Calculate x position
+    //         lv_coord_t y = y_start + row * y_offset; // Calculate y position
 
-            // Use the previously created button creator with the values for the current button
-            create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
+    //         // Get label text and color info from the 2D array
+    //         const char *label_text = button_info[button_count].label;
+    //         bool is_red = button_info[button_count].is_red;
+    //         int button_value = (button_count + 1);
 
-            // Track the number of buttons created
-            button_count++;
-        }
-    }
+    //         // Use the previously created button creator with the values for the current button
+    //         create_button(lv_scr_act(), label_text, x, y, button_value, is_red);
+
+    //         // Track the number of buttons created
+    //         button_count++;
+    //     }
+    // }
 
     lift.extend();
     pros::delay(10);
@@ -518,14 +589,15 @@ void initialize()
             // pros::lcd::print(0, "vertical: %f", ((float)wall_rotation.get_position())/100.0);
             // pros::lcd::print(1, "target: %f", target);
             // pros::lcd::print(2, "toutput: %f", toutput);
-            // pros::lcd::print(0, "IMU HEADING: %f", imu.get_heading());
-            // pros::lcd::print(0, "hue: %f", ring_color.get_hue());
-            // pros::lcd::print(1, "distance: %i", ring_distance.get());
-            // pros::lcd::print(2,"heading: %i", ring_color.get_proximity());
-            pros::lcd::print(0, "stack: %i", rings.front());
-            pros::lcd::print(1, "distance: %i", ring_distance.get());
-            pros::lcd::print(2,"heading: %i", ring_color.get_proximity());
-            // pros::lcd::print(2, "toutput: %f", toutput);
+
+            pros::lcd::print(0, "currentRed: %i", currentRed);
+            pros::lcd::print(1, "previousRed: %i", previousRed);
+            pros::lcd::print(2,"hasCurrent: %i", hasCurrent);
+
+            // pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
+            // pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
+            // pros::lcd::print(2, "Theta: %f", ((chassis.getPose().theta) )); // heading
+            // pros::lcd::print(3, "IMU HEADING: %f", imu.get_heading());
 
             // delay to save resources
             pros::delay(20);
@@ -568,41 +640,51 @@ void autonomous()
     // RED ringside sawp
     // auton
     // alliance stake
-    chassis.setPose(-53.5, -14, 0);
-    lift.retract();
-    doinker.extend();
-    pros::delay(500);
-    // chassis.turnToHeading(210,1000);
-    pros::delay(1000);
-    pros::Task wallstake_task(wallPID);
-    pros::delay(10);
-    chassis.moveToPose(-65, -3, 315, 2000, {.lead = 0.14, .maxSpeed = 80});
-    pros::delay(2000);
-    // wall stake movement
-    state += 2;
-    pros::delay(1000);
-    state -= 2;
-    pros::delay(1000);
-    chassis.moveToPoint(-53.5, -33, 2000, {.forwards = false, .maxSpeed = 60});
-    pros::delay(1000);
-    intakeForward();
-    pros::delay(10);
-    // Ring 1
-    // intake lift up
-    chassis.turnToPoint(-31, -36, 2000, {.forwards = false, .direction = AngularDirection::CW_CLOCKWISE});
-    pros::delay(2000);
-    chassis.moveToPoint(-31, -36, 3000, {.forwards = false, .maxSpeed = 30});
-    pros::delay(2000);
-    clamp.extend();
-    pros::delay(500);
-    chassis.turnToHeading(0, 1000);
-    pros::delay(1000);
-    chassis.moveToPoint(-24, -70, 2000, {.maxSpeed = 60});
-    pros::delay(2000);
+    chassis.setPose(0, 0, 0);
+
+    pros::delay(100);
+    // chassis.moveToPoint(0, 12, 2000);
+    while (true)
+    {
+        chassis.moveToPoint(0, 24, 2000);
+        chassis.moveToPoint(0, 0, 2000, {.forwards = false});
+    }
+
+    // chassis.moveToPoint(0, 0, 8000, );
+    // lift.retract();
+    // doinker.extend();
+    // pros::delay(500);
+    // // chassis.turnToHeading(210,1000);
+    // pros::delay(1000);
+    // pros::Task wallstake_task(wallPID);
+    // pros::delay(10);
+    // chassis.moveToPose(-65, -3, 315, 2000, {.lead = 0.14, .maxSpeed = 80});
+    // pros::delay(2000);
+    // // wall stake movement
+    // state += 2;
+    // pros::delay(1000);
+    // state -= 2;
+    // pros::delay(1000);
+    // chassis.moveToPoint(-53.5, -33, 2000, {.forwards = false, .maxSpeed = 60});
+    // pros::delay(1000);
+    // intakeForward();
+    // pros::delay(10);
+    // // Ring 1
+    // // intake lift up
+    // chassis.turnToPoint(-31, -36, 2000, {.forwards = false, .direction = AngularDirection::CW_CLOCKWISE});
+    // pros::delay(2000);
+    // chassis.moveToPoint(-31, -36, 3000, {.forwards = false, .maxSpeed = 30});
+    // pros::delay(2000);
+    // clamp.extend();
+    // pros::delay(500);
+    // chassis.turnToHeading(0, 1000);
+    // pros::delay(1000);
+    // chassis.moveToPoint(-24, -70, 2000, {.maxSpeed = 60});
+    // pros::delay(2000);
     // chassis.turnToPoint(-2, 50, 2000, {.maxSpeed = 60});
     // pros::delay(2000);
     // chassis.moveToPoint(-2,50,2000, {.maxSpeed = 60});
-    pros::delay(4000);
+    // pros::delay(4000);
     // move to ladder
     // chassis.moveToPose(5,35,180, 2000,{.lead = 0.14, .maxSpeed = 80});
     pros::delay(100000);
@@ -1107,14 +1189,18 @@ bool outake = false;
 bool doinkerToggle = false;
 bool rushToggle = false;
 bool prerollerToggle = false;
+int cooldown = 0;
+bool check = false;
 
 void opcontrol()
 {
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
-    // pros::Task sort_task(colorSort);
-    lift.retract();
+    pros::Task detect_task(detectChange);
     pros::delay(10);
+    pros::Task sort_task(colorSort);
+    pros::delay(10);
+    lift.retract();
 
     // // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
     // pros::delay(10);
@@ -1188,8 +1274,8 @@ void opcontrol()
 
             if (state == 1)
             {
-                intake_hooks.move(-127);
-                pros::delay(10);
+                intake_hooks.move(-50);
+                pros::delay(150);
                 intake_hooks.move(0);
                 pros::delay(10);
                 if (intake)
@@ -1213,9 +1299,19 @@ void opcontrol()
             }
             if (!intake)
             {
-                pros::delay(500);
+                cooldown = 20;
+                check = true;
+            }
+        }
+
+        if (check)
+        {
+            if (cooldown == 0)
+            {
+                check = false;
                 intakeForward();
             }
+            cooldown--;
         }
 
         // extend clamp on press

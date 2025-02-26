@@ -49,7 +49,7 @@
 // color sort
 #define RING_COLOR 2
 //*IN MILLISECONDS* the time that it takes for the ring to reach the top of the hooks from when the color sensor detects it*/
-#define COLOR_TIME 120
+#define COLOR_TIME 500
 inline pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 inline pros::Motor left_front_drive(LEFT_FRONT_DRIVE);
@@ -68,7 +68,7 @@ inline pros::Motor wall_motor(WALL_MOTOR);
 inline pros::Motor intake_hooks(INTAKE_HOOKS);
 inline pros::Motor intake_preroller(INTAKE_PREROLLER);
 
-inline pros::Imu imu(IMU);
+// inline pros::Imu imu(IMU);
 
 inline pros::adi::Pneumatics clamp(CLAMP, false);
 inline pros::adi::Pneumatics doinker(DOINKER, true);
