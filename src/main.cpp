@@ -258,6 +258,7 @@ int proximity = 0;
 
 void detectChange()
 {
+    ring_color.set_led_pwm(100);
     pros::delay(10);
     while (true)
     {
@@ -268,122 +269,131 @@ void detectChange()
         {
             if ((hue < 30) && (proximity > RING_PROXIMITY))
             {
+                if (!IS_RED)
+                {
+                    pros::delay(200);
+                    intakeBackward();
+                    pros::delay(200);
+                    intakeForward();
+                }
                 // detects previous red
-                previousRed = 2;
+                // previousRed = 2;
             }
             else if ((hue > 100) && (proximity > RING_PROXIMITY))
             {
                 // detects previous blue
-                previousRed = 1;
-                pros::delay(200);
-                intakeBackward();
-                pros::delay(200);
-                intakeForward();
+                // previousRed = 1;
+                if (IS_RED)
+                {
+                    pros::delay(200);
+                    intakeBackward();
+                    pros::delay(200);
+                    intakeForward();
+                }
             }
-            else
-            {
-                previousRed = 0;
-            }
+            // else
+            // {
+            //     previousRed = 0;
+            // }
 
-            if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
-            {
-                hasPrevious = true;
-            }
-            else
-            {
-                hasPrevious = false;
-            }
-            pros::delay(10);
+            // if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+            // {
+            //     hasPrevious = true;
+            // }
+            // else
+            // {
+            //     hasPrevious = false;
+            // }
+            // pros::delay(10);
 
-            hue = ring_color.get_hue();
-            proximity = ring_color.get_proximity();
+            // hue = ring_color.get_hue();
+            // proximity = ring_color.get_proximity();
 
-            if ((hue < 30) && (proximity > RING_PROXIMITY))
-            {
-                // detects current red
-                currentRed = 2;
-            }
-            else if ((hue > 100) && (proximity > RING_PROXIMITY))
-            {
-                // detects current blue
-                currentRed = 1;
-            }
-            else
-            {
-                currentRed = 0;
-            }
+            // if ((hue < 30) && (proximity > RING_PROXIMITY))
+            // {
+            //     // detects current red
+            //     currentRed = 2;
+            // }
+            // else if ((hue > 100) && (proximity > RING_PROXIMITY))
+            // {
+            //     // detects current blue
+            //     currentRed = 1;
+            // }
+            // else
+            // {
+            //     currentRed = 0;
+            // }
 
-            if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
-            {
-                hasCurrent = true;
-            }
-            else
-            {
-                hasCurrent = false;
-            }
+            // if ((ring_distance.get() < RING_DISTANCE_THRESHOLD))
+            // {
+            //     hasCurrent = true;
+            // }
+            // else
+            // {
+            //     hasCurrent = false;
+            // }
             pros::delay(10);
         }
     }
 }
 
-bool gotBlue = true;
-bool gotRed = false;
+// bool gotBlue = true;
+// bool gotRed = false;
 
 void colorSort()
 {
     // set sort to true when you want the ring sort activated, and set it to false when it should stop
-    ring_color.set_led_pwm(100);
-    pros::delay(10);
-    while (true)
-    {
 
-        if (sort)
-        {
-            if ((previousRed == 1) && (currentRed == 2))
-            {
-                gotRed = true;
-            }
-            else if ((previousRed == 0) && (currentRed == 2))
-            {
-                gotRed = true;
-            }
-            else if ((previousRed == 2) && (currentRed == 1))
-            {
-                gotBlue = true;
-            }
-            else if ((previousRed == 0) && (currentRed == 1))
-            {
-                gotBlue = true;
-            }
+    // while (true)
+    // {
 
-            if (hasCurrent && (!hasPrevious))
-            {
-                // if (!rings.empty())
-                // {
-                //     if (rings.front())
-                //     {
-                //         // sort
-                //         pros::delay(COLOR_TIME);
-                //         intakeBackward();
-                //         pros::delay(200);
-                //         intakeForward();
-                //     }
-                //     rings.pop();
-                // }
+    //     if (sort)
+    //     {
+    //         if ((previousRed == 1) && (currentRed == 2))
+    //         {
+    //             gotRed = true;
+    //         }
+    //         else if ((previousRed == 0) && (currentRed == 2))
+    //         {
+    //             gotRed = true;
+    //         }
+    //         else if ((previousRed == 2) && (currentRed == 1))
+    //         {
+    //             gotBlue = true;
+    //         }
+    //         else if ((previousRed == 0) && (currentRed == 1))
+    //         {
+    //             gotBlue = true;
+    //         }
 
-                if (gotBlue)
-                {
-                    // pros::delay(50);
-                    // intakeBackward();
-                    // pros::delay(400);
-                    // intakeForward();
-                    gotBlue = false;
-                }
+    //         if (hasCurrent && (!hasPrevious))
+    //         {
+    //             // if (!rings.empty())
+    //             // {
+    //             //     if (rings.front())
+    //             //     {
+    //             //         // sort
+    //             //         pros::delay(COLOR_TIME);
+    //             //         intakeBackward();
+    //             //         pros::delay(200);
+    //             //         intakeForward();
+    //             //     }
+    //             //     rings.pop();
+    //             // }
 
-            }
-            pros::delay(10);
-        }
-    }
+    //             if (gotBlue)
+    //             {
+    //                 // pros::delay(50);
+    //                 // intakeBackward();
+    //                 // pros::delay(400);
+    //                 // intakeForward();
+    //                 gotBlue = false;
+    //             }
+
+    //         }
+    //         pros::delay(10);
+    //     }
+    // }
 }
 
 void foxglove()
