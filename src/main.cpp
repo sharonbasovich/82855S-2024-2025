@@ -154,15 +154,15 @@ lemlib::OdomSensors sensors(
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(8, // proportional gain (kP)
                                               0,  // integral gain (kI)
-                                              0,  // derivative gain (kD)
+                                              28, // derivative gain (kD)
                                               0,  // anti windup
                                               0,  // small error range, in inches
                                               0,  // small error range timeout, in milliseconds
                                               0,  // large error range, in inches
                                               0,  // large error range timeout, in milliseconds
-                                              0   // maximum acceleration (slew)
+                                              70  // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -600,13 +600,13 @@ void initialize()
             // pros::lcd::print(1, "target: %f", target);
             // pros::lcd::print(2, "toutput: %f", toutput);
 
-            pros::lcd::print(0, "currentRed: %i", currentRed);
-            pros::lcd::print(1, "previousRed: %i", previousRed);
-            pros::lcd::print(2,"hasCurrent: %i", hasCurrent);
+            // pros::lcd::print(0, "currentRed: %i", currentRed);
+            // pros::lcd::print(1, "previousRed: %i", previousRed);
+            // pros::lcd::print(2,"hasCurrent: %i", hasCurrent);
 
-            // pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
-            // pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
-            // pros::lcd::print(2, "Theta: %f", ((chassis.getPose().theta) )); // heading
+            pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
+            pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
+            pros::lcd::print(2, "Theta: %f", ((chassis.getPose().theta) )); // heading
             // pros::lcd::print(3, "IMU HEADING: %f", imu.get_heading());
 
             // delay to save resources
@@ -647,18 +647,20 @@ void competition_initialize() {}
 
 void autonomous()
 {
+    progSkills();
     // RED ringside sawp
     // auton
     // alliance stake
-    chassis.setPose(0, 0, 0);
+    // chassis.setPose(0, 0, 0);
 
-    pros::delay(100);
-    // chassis.moveToPoint(0, 12, 2000);
-    while (true)
-    {
-        chassis.moveToPoint(0, 24, 2000);
-        chassis.moveToPoint(0, 0, 2000, {.forwards = false});
-    }
+    // pros::delay(100);
+    // // chassis.moveToPoint(0, 12, 2000);
+    // while (true)
+    // {
+    //     chassis.moveToPoint(0, 24, 2000);
+    //     pros::delay(2000);
+    //     chassis.moveToPoint(0, 0, 2000, {.forwards = false});
+    // }
 
     // chassis.moveToPoint(0, 0, 8000, );
     // lift.retract();
@@ -1206,10 +1208,10 @@ void opcontrol()
 {
     pros::Task wallstake_task(wallPID);
     pros::delay(10);
-    pros::Task detect_task(detectChange);
-    pros::delay(10);
-    pros::Task sort_task(colorSort);
-    pros::delay(10);
+    // pros::Task detect_task(detectChange);
+    // pros::delay(10);
+    // pros::Task sort_task(colorSort);
+    // pros::delay(10);
     lift.retract();
 
     // // pros::Task controller_task(updateController); // prints to controller, comment out to get back default ui
