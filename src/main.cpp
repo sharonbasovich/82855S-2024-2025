@@ -137,10 +137,10 @@ lemlib::Drivetrain drivetrain(&left_mg,                   // left motor group
                               10.4,                       // 12 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 3.25" omnis
                               450,                        // drivetrain rpm is 450
-                              0                           // horizontal drift is 2 (for now)
+                              2                           // horizontal drift is 2 (for now)
 );
 
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_odom, lemlib::Omniwheel::NEW_2, -3.25);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_odom, lemlib::Omniwheel::NEW_2, -5.25); //-3.25
 
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_odom, lemlib::Omniwheel::NEW_2, 0.5);
 
@@ -154,7 +154,7 @@ lemlib::OdomSensors sensors(
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(8, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(8,  // proportional gain (kP)
                                               0,  // integral gain (kI)
                                               28, // derivative gain (kD)
                                               0,  // anti windup
@@ -162,19 +162,19 @@ lemlib::ControllerSettings lateral_controller(8, // proportional gain (kP)
                                               0,  // small error range timeout, in milliseconds
                                               0,  // large error range, in inches
                                               0,  // large error range timeout, in milliseconds
-                                              70  // maximum acceleration (slew)
+                                              5   // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(3,  // proportional gain (kP)
-                                              0,  // integral gain (kI)
-                                              25, // derivative gain (kD)
-                                              0,  // anti windup
-                                              0,  // small error range, in inches
-                                              0,  // small error range timeout, in milliseconds
-                                              0,  // large error range, in inches
-                                              0,  // large error range timeout, in milliseconds
-                                              0   // maximum acceleration (slew)
+lemlib::ControllerSettings angular_controller(3.3, // proportional gain (kP)
+                                              0,   // integral gain (kI)
+                                              33,  // derivative gain (kD)
+                                              0,   // anti windup
+                                              0,   // small error range, in inches
+                                              0,   // small error range timeout, in milliseconds
+                                              0,   // large error range, in inches
+                                              0,   // large error range timeout, in milliseconds
+                                              0    // maximum acceleration (slew)
 );
 
 lemlib::ExpoDriveCurve
@@ -644,9 +644,203 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
+void progSkills()
+{
+    // ---------- INITIALIZATION (â‰ˆ1 s delay) ----------
+    // Set initial robot position and retract mechanisms
+    chassis.setPose(-58.263, -0.459, 90);
+    lift.retract();
+    doinker.extend();
+    intakeForward();
+    pros::delay(1000); // Wait 1 sec
+
+    // Start wall PID correction asynchronously
+    pros::Task wallstake_task(wallPID);
+    pros::delay(10);
+
+    // start ring hold task
+    pros::Task holdring_task(holdRing);
+    pros::delay(10);
+
+    // ---------- PART 1: MOGO 1 & LADY BROWN (â‰ˆ26 s worst-case) ----------
+    // Move forward along x-axis to (-47, -0.459)
+    chassis.moveToPoint(-47, -0.459, 1000);
+    pros::delay(500);
+    chassis.turnToHeading(0, 1000);
+    pros::delay(1000);
+
+    // MOGO 1 Sequence:
+    // Approach and clamp MOGO 1
+
+    // GET MOGO 1
+    chassis.moveToPoint(-57, -23, 2000, {.forwards = false, .maxSpeed = 60});
+    pros::delay(1500);
+    clamp.extend(); // Clamp MOGO 1
+    pros::delay(500);
+
+    // Intake first ring on MOGO 1
+    chassis.moveToPose(-23, -23, 90, 1000);
+    pros::delay(1000);
+
+    // Move towards Lady Brown goal and stop intake
+
+    // get ring 2
+    chassis.moveToPose(23, -47, 120, 3000);
+    pros::delay(2000);
+    state += 1; // Raise Lady Brown mechanism
+
+    pros::delay(2000);
+    // intakeStop();
+
+    // Move to second ring on MOGO 1
+    // pros::delay(2500);
+    // intake_preroller.move(127);
+
+    // drive back
+    chassis.moveToPoint(-5, -44, 3000, {.forwards = false});
+    pros::delay(2000);
+    chassis.turnToPoint(-0.153, -69, 3000);
+    // Move to Lady Brown scoring position and release
+    chassis.moveToPoint(-0.153, -69, 3000);
+    pros::delay(500);
+    intake_hooks.move(-50);
+    pros::delay(150);
+    intake_hooks.move(0);
+    pros::delay(10);
+
+    state += 1; // Score Lady Brown
+    pros::delay(500);
+
+    // Reset Lady Brown mechanism and move to next position
+    state -= 2;
+    intakeForward();
+    pros::delay(10);
+    chassis.moveToPose(-5.199, -47, 160, 2000, {.forwards = false});
+    pros::delay(500);
+
+    // Move to (-58, -47) facing 270Â° smoothly
+    chassis.moveToPose(-58, -47, 270, 2000, {.forwards = false});
+    pros::delay(500);
+
+    // Score Ring 6
+    chassis.moveToPose(-47, -58, 145, 2000);
+    pros::delay(250);
+
+    // Score mogo in the corner
+    clamp.retract();
+    chassis.moveToPose(-65, -64, 45, 2000, {.forwards = false});
+
+    // ---------- PART 2: SECOND MOGO (=25 s worst-case) ----------
+    // Move towards second mogo
+    chassis.moveToPoint(-47, -36, 2000);
+
+    // Turn to align with MOGO 2 using the back clamp
+    chassis.turnToPoint(-47, 13, 2000, {.forwards = false});
+    chassis.moveToPose(-47, 13, 180, 2000, {.forwards = false});
+    pros::delay(1000);
+
+    // Approach and clamp MOGO 2
+    chassis.moveToPoint(-47, 23, 2000, {.forwards = false, .maxSpeed = 60});
+    pros::delay(500);
+    clamp.extend();
+    pros::delay(500);
+
+    // Move and intake rings on MOGO 2
+    chassis.moveToPose(-23, 25, 90, 2000);
+    pros::delay(500);
+    chassis.moveToPose(-23, 47, 0, 2000);
+    pros::delay(500);
+    chassis.moveToPose(-58, 47, 270, 2000);
+    pros::delay(500);
+    chassis.moveToPose(-47, 58, 45, 2000);
+    pros::delay(500);
+
+    // Score MOGO 2 in the corner
+    clamp.retract();
+    chassis.moveToPose(-64, 64, 120, 2000);
+    pros::delay(500);
+
+    // ---------- PART 3: MOGO 3 & LADY BROWN (â‰ˆ27 s worst-case) ----------
+    // Move to MOGO 3 and prepare for Lady Brown
+    chassis.moveToPose(-40, 58, 90, 2000);
+    state += 1;
+    pros::delay(500);
+
+    // Line up for Lady Brown and score
+    chassis.moveToPose(-0.153, 59, 0, 2000);
+    pros::delay(500);
+    state += 1;
+    pros::delay(500);
+    state -= 2;
+    pros::delay(10);
+    hold = true;
+    pros::delay(500);
+
+    // intake 2 rings and move to Mogo 3
+
+    chassis.turnToPoint(24, 47, 2000); //(Ring 1 mogo 3)
+    pros::delay(250);
+
+    chassis.moveToPose(24, 47, 130, 2000); // ring 1
+
+    pros::delay(500);
+
+    chassis.moveToPose(24, 23, 180, 2000);
+    pros::delay(500);
+
+    chassis.turnToHeading(320, 2000);
+
+    pros::delay(50);
+
+    chassis.moveToPose(47, 0.153, 320, 2000, {.forwards = false, .maxSpeed = 60});
+    pros::delay(250);
+    clamp.extend();
+    pros::delay(10);
+    hold = false;
+    intakeForward();
+
+    // Intake rings on MOGO 3
+    chassis.moveToPose(47, 59, 0, 2000);
+    pros::delay(500);
+
+    // Score MOGO 3 in the corner
+    chassis.turnToHeading(270, 2000, {.direction = AngularDirection::CW_CLOCKWISE});
+    pros::delay(500);
+    clamp.retract();
+    chassis.moveToPose(65, 64, 270, 2000);
+    pros::delay(250);
+
+    // ---------- ALLIANCE STAKE & HANG (â‰ˆ5 s worst-case) ----------
+    // Move to intake rings for alliance stake
+    hold = true;
+    pros::delay(10);
+
+    chassis.moveToPose(59, 47, 130, 2000); // intake ring for alliance
+    pros::delay(500);
+
+    chassis.moveToPoint(45, 24, 2000); // move to position for alliance
+    pros::delay(500);
+    chassis.moveToPoint(62, 0, 2000); // turn to alliance
+    pros::delay(500);
+    chassis.moveToPose(62, 0, 270, 2000); // go to alliance
+    pros::delay(500);
+
+    hold = false;
+    intakeForward();
+    pros::delay(500);
+    intakeBackward();
+    chassis.moveToPose(56, -19.2, 350, 2000); // aligh wiht mogo
+    pros::delay(500);
+    chassis.moveToPose(65, -65, 330, 2000); // push mogo in cornor
+    pros::delay(500);
+    state += 2; // initiate hang
+    chassis.moveToPoint(12, -14, 2000);
+}
 
 void autonomous()
 {
+    pros::Task wallstake_task(wallPID);
+    pros::delay(10);
     progSkills();
     // RED ringside sawp
     // auton
@@ -657,9 +851,9 @@ void autonomous()
     // // chassis.moveToPoint(0, 12, 2000);
     // while (true)
     // {
-    //     chassis.moveToPoint(0, 24, 2000);
-    //     pros::delay(2000);
-    //     chassis.moveToPoint(0, 0, 2000, {.forwards = false});
+    //     chassis.turnToHeading(180, 2000);
+    //     pros::delay(4000);
+    //     chassis.turnToHeading(0, 2000);
     // }
 
     // chassis.moveToPoint(0, 0, 8000, );
@@ -1018,7 +1212,7 @@ void autonomous()
 //         pros::delay(25);
 //     }
 // }
-void progSkills()
+void progSkillssss()
 {
     // ---------- INITIALIZATION (≈1 s delay) ----------
     // Set initial robot position and retract mechanisms
